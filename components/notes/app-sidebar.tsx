@@ -50,6 +50,7 @@ export function AppSidebar({
     { href: "/", emoji: "🏠", label: t.dashboard.nav, active: pathname === "/" },
     { href: "/notes", emoji: "📝", label: t.notes, active: pathname.startsWith("/notes"), badge: notes.length },
     { href: "/calendar", emoji: "📅", label: t.dashboard.calendarNav, active: pathname.startsWith("/calendar") },
+    { href: "/about", emoji: "💜", label: t.about.nav, active: pathname.startsWith("/about") },
   ]
 
   return (

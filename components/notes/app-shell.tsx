@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { ViewTransition } from "react"
 import { usePathname, useRouter } from "next/navigation"
 import { toast } from "sonner"
 import {
@@ -77,6 +78,7 @@ function Inner({ children }: { children: React.ReactNode }) {
   const edit = (n: Note) => setTarget({ note: n })
   const add = (status?: Status, deadline?: string) => setTarget({ status, deadline })
   const onNotesPage = pathname.startsWith("/notes")
+  const onAbout = pathname.startsWith("/about")
 
   const ctx: Shell = {
     filters, setFilters, sortBy, setSortBy, view, setView, visible,
@@ -97,8 +99,8 @@ function Inner({ children }: { children: React.ReactNode }) {
         <SidebarInset className="app-bg min-w-0 bg-transparent">
           <div className="flex flex-1 flex-col gap-4 p-4 pb-28 md:p-6">
             <AppHeader
-              title={onNotesPage ? t.notes : pathname.startsWith("/calendar") ? t.calendar.title : t.dashboard.greeting}
-              subtitle={onNotesPage ? undefined : pathname.startsWith("/calendar") ? t.calendar.subtitle : t.dashboard.subtitle}
+              title={onNotesPage ? t.notes : onAbout ? t.about.title : pathname.startsWith("/calendar") ? t.calendar.title : t.dashboard.greeting}
+              subtitle={onNotesPage ? undefined : onAbout ? t.about.subtitle : pathname.startsWith("/calendar") ? t.calendar.subtitle : t.dashboard.subtitle}
               overdue={notes.filter(isOverdue).length}
               onBell={() => {
                 setFilters({ ...emptyFilters, deadline: "overdue" })
@@ -110,7 +112,10 @@ function Inner({ children }: { children: React.ReactNode }) {
                 if (query && !onNotesPage) router.push("/notes")
               }}
             />
-            {children}
+            {/* Sehipe almashqanda peqet mezmun yumshaq almishidu; sidebar/header/bar ornida turidu */}
+            <ViewTransition key={pathname} default="page-fade">
+              <div className="flex flex-col gap-4">{children}</div>
+            </ViewTransition>
           </div>
         </SidebarInset>
         <MobileBottomNav onNew={() => add()} />

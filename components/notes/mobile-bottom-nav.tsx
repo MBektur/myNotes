@@ -6,7 +6,7 @@ import { Plus } from "lucide-react"
 import { t } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 
-/** Mobilde (<md) astida qadalghan gézish: Panel · Xatire · [+] · Kalendar */
+/** Mobilde (<md) astida qadalghan gézish: Panel · Xatire · [+] · Kalendar · Heqqide */
 export function MobileBottomNav({ onNew }: { onNew: () => void }) {
   const pathname = usePathname()
 
@@ -14,6 +14,7 @@ export function MobileBottomNav({ onNew }: { onNew: () => void }) {
     { href: "/", emoji: "🏠", label: t.dashboard.nav, active: pathname === "/" },
     { href: "/notes", emoji: "📝", label: t.notes, active: pathname.startsWith("/notes") },
     { href: "/calendar", emoji: "📅", label: t.dashboard.calendarNav, active: pathname.startsWith("/calendar") },
+    { href: "/about", emoji: "💜", label: t.about.nav, active: pathname.startsWith("/about") },
   ]
 
   const renderItem = (n: (typeof items)[number]) => (
@@ -48,6 +49,7 @@ export function MobileBottomNav({ onNew }: { onNew: () => void }) {
         <Plus className="size-7" />
       </button>
       {renderItem(items[2])}
+      {renderItem(items[3])}
     </nav>
   )
 }

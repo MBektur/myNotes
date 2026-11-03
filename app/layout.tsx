@@ -13,6 +13,7 @@ const lateef = Lateef({ variable: "--font-lateef", subsets: ["arabic", "latin"],
 export const metadata: Metadata = {
   title: "myNotes",
   description: "شەخسىي خاتىرە ۋە ۋەزىپە تاختىسى",
+  appleWebApp: { capable: true, title: "myNotes", statusBarStyle: "default" },
 }
 
 export const viewport: Viewport = { width: "device-width", initialScale: 1, viewportFit: "cover" }

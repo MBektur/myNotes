@@ -199,3 +199,22 @@
   font-weight: 700;
   box-shadow: 0 8px 16px -6px oklch(0.5 0.14 295 / 0.55), inset 0 2px 2px oklch(1 0 0 / 0.45), inset 0 -3px 5px oklch(0.45 0.14 295 / 0.25);
 }
+
+/* Sehipe almishish: yumshaq solashturush (ViewTransition "page-fade") */
+::view-transition-old(.page-fade) {
+  animation: 120ms ease-out both page-fade-out;
+}
+::view-transition-new(.page-fade) {
+  animation: 180ms ease-in 60ms both page-fade-in;
+}
+@keyframes page-fade-out {
+  to { opacity: 0; }
+}
+@keyframes page-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
