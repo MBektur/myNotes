@@ -39,20 +39,3 @@ export function saveView(v: ViewMode) {
     localStorage.setItem(VIEW_KEY, v)
   } catch {}
 }
-
-const PAGE_KEY = "mynotes:page"
-export type Page = "dashboard" | "notes"
-
-export function loadPage(): Page {
-  try {
-    return localStorage.getItem(PAGE_KEY) === "notes" ? "notes" : "dashboard"
-  } catch {
-    return "dashboard"
-  }
-}
-
-export function savePage(p: Page) {
-  try {
-    localStorage.setItem(PAGE_KEY, p)
-  } catch {}
-}

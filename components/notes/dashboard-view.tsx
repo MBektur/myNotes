@@ -104,7 +104,7 @@ function Panel({
   return (
     <section id={id} className={cn("clay p-5", className)}>
       <div className="mb-3 flex items-center justify-between gap-2">
-        <h2 className="text-base font-bold">{title}</h2>
+        <h2 className="text-2xl font-regular">{title}</h2>
         {action}
       </div>
       {children}
@@ -112,7 +112,7 @@ function Panel({
   )
 }
 
-const pill = "rounded-full px-3 py-1 text-xs font-semibold"
+const pill = "rounded-full px-3 py-1 text-xs font-regular"
 
 const folderTones = [
   { icon: "text-violet-500", bar: "bg-violet-400", bg: "bg-violet-100 dark:bg-violet-900/40" },
@@ -310,7 +310,7 @@ export function DashboardView({
                       {reminderTones[i % reminderTones.length].emoji}
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-semibold">{n.title || n.content?.slice(0, 40) || t.untitled}</span>
+                      <span className="block truncate text-sm font-regular">{n.title || n.content?.slice(0, 40) || t.untitled}</span>
                       <span className={cn("block text-xs", isOverdue(n) ? "font-medium text-red-600 dark:text-red-400" : "text-foreground/60")}>
                         {relDate(n.deadline!)}
                       </span>
@@ -324,7 +324,7 @@ export function DashboardView({
 
         <section className="clay clay-lilac relative flex items-center gap-2 overflow-hidden p-5">
           <div className="min-w-0 flex-1">
-            <h2 className="text-lg leading-snug font-extrabold text-violet-600 dark:text-violet-300">{t.dashboard.motivationTitle}</h2>
+            <h2 className="text-2xl leading-snug font-regular text-violet-600 dark:text-violet-300">{t.dashboard.motivationTitle}</h2>
             <p className="mt-1.5 text-xs leading-relaxed text-foreground/70">{t.dashboard.motivationBody}</p>
           </div>
           <span className="relative shrink-0 text-7xl drop-shadow-lg" aria-hidden>

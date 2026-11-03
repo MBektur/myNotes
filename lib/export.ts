@@ -1,6 +1,7 @@
 import { z } from "zod"
 import { NOTE_COLORS, PRIORITIES, STATUSES, type Note } from "./types"
 import { todayStr } from "./filters"
+import { parseCsv } from "./csv"
 
 const noteSchema = z.object({
   id: z.string().min(1),
@@ -38,6 +39,7 @@ export function exportJson(notes: Note[]) {
 
 export async function parseImport(file: File): Promise<Note[] | null> {
   try {
+    if (/\.csv$/i.test(file.name) || file.type === "text/csv") return parseCsv(await file.text())
     const json = JSON.parse(await file.text())
     const res = fileSchema.safeParse(json)
     return res.success ? (res.data.notes as Note[]) : null

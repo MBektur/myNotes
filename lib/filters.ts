@@ -3,16 +3,16 @@ import { PRIORITIES, type Note, type Priority, type Status } from "./types"
 
 export type Filters = {
   query: string
-  status?: Status
-  category?: string
+  statuses: Status[]
+  categories: string[]
   tags: string[]
-  priority?: Priority
+  priorities: Priority[]
   deadline?: "overdue" | "week" | "none"
 }
 
 export type SortBy = "updated" | "deadline" | "priority" | "title"
 
-export const emptyFilters: Filters = { query: "", tags: [] }
+export const emptyFilters: Filters = { query: "", statuses: [], categories: [], tags: [], priorities: [] }
 
 export function todayStr(d = new Date()) {
   const m = String(d.getMonth() + 1).padStart(2, "0")
@@ -46,10 +46,10 @@ export function searchNotes(notes: Note[], query: string) {
 
 export function filterNotes(notes: Note[], f: Filters) {
   let out = searchNotes(notes, f.query)
-  if (f.status) out = out.filter((n) => n.status === f.status)
-  if (f.category) out = out.filter((n) => n.category === f.category)
+  if (f.statuses.length) out = out.filter((n) => f.statuses.includes(n.status))
+  if (f.categories.length) out = out.filter((n) => !!n.category && f.categories.includes(n.category))
   if (f.tags.length) out = out.filter((n) => f.tags.every((t) => n.tags.includes(t)))
-  if (f.priority) out = out.filter((n) => n.priority === f.priority)
+  if (f.priorities.length) out = out.filter((n) => !!n.priority && f.priorities.includes(n.priority))
   if (f.deadline) {
     const today = todayStr()
     const weekEnd = todayStr(new Date(Date.now() + 7 * 86400000))
@@ -84,7 +84,7 @@ export function sortNotes(notes: Note[], by: SortBy) {
 }
 
 export function hasActiveFilters(f: Filters) {
-  return !!(f.query || f.status || f.category || f.tags.length || f.priority || f.deadline)
+  return !!(f.query || f.statuses.length || f.categories.length || f.tags.length || f.priorities.length || f.deadline)
 }
 
 export function progressOf(n: Note) {

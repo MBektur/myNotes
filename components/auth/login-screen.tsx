@@ -31,7 +31,7 @@ export function LoginScreen({ onSuccess }: { onSuccess: () => void }) {
           <div className="flex size-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
             <NotebookPen className="size-6" />
           </div>
-          <h1 className="text-xl font-semibold">{t.appName}</h1>
+          <h1 className="text-xl font-medium">{t.appName}</h1>
           <p className="text-sm text-muted-foreground">{t.login.subtitle}</p>
         </div>
         <div className="space-y-2">

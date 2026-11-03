@@ -1,15 +1,11 @@
 "use client"
 
 import Image from "next/image"
-import { Check, Download, LogOut, Moon, Sparkles, Sun, Upload } from "lucide-react"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import { Download, FileSpreadsheet, LogOut, Moon, Sparkles, Sun, Upload } from "lucide-react"
 import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import {
   Sidebar,
   SidebarContent,
@@ -20,10 +16,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { cn } from "@/lib/utils"
 import { t } from "@/lib/i18n"
-import type { Filters } from "@/lib/filters"
-import type { Page } from "@/lib/storage"
 import type { Note } from "@/lib/types"
 
 const itemCls = "h-11 gap-3 text-[15px] text-start"
@@ -35,42 +28,29 @@ const Emoji = ({ children }: { children: string }) => (
 
 export function AppSidebar({
   notes,
-  filters,
-  setFilters,
-  page,
-  setPage,
   onExport,
+  onExportCsv,
   onImport,
   onDemo,
   onLogout,
 }: {
   notes: Note[]
-  filters: Filters
-  setFilters: (f: Filters) => void
-  page: Page
-  setPage: (p: Page) => void
   onExport: () => void
+  onExportCsv: () => void
   onImport: () => void
   onDemo: () => void
   onLogout: () => void
 }) {
   const { resolvedTheme, setTheme } = useTheme()
   const { setOpenMobile } = useSidebar()
+  const pathname = usePathname()
   const close = () => setOpenMobile(false)
 
-  const categories = new Map<string, number>()
-  const tags = new Map<string, number>()
-  for (const n of notes) {
-    if (n.category) categories.set(n.category, (categories.get(n.category) ?? 0) + 1)
-    for (const tag of n.tags) tags.set(tag, (tags.get(tag) ?? 0) + 1)
-  }
-  const isAll = !filters.category && !filters.tags.length
-
-  const goCalendar = () => {
-    setPage("dashboard")
-    close()
-    setTimeout(() => document.getElementById("dash-calendar")?.scrollIntoView({ behavior: "smooth", block: "center" }), 80)
-  }
+  const nav = [
+    { href: "/", emoji: "🏠", label: t.dashboard.nav, active: pathname === "/" },
+    { href: "/notes", emoji: "📝", label: t.notes, active: pathname.startsWith("/notes"), badge: notes.length },
+    { href: "/calendar", emoji: "📅", label: t.dashboard.calendarNav, active: pathname.startsWith("/calendar") },
+  ]
 
   return (
     <Sidebar side="right" variant="floating">
@@ -86,106 +66,26 @@ export function AppSidebar({
               className="size-full rounded-[1.5rem] object-cover"
             />
           </div>
-          <span className="mt-3 text-xl font-bold">{t.appName} 💜</span>
+          <span className="mt-3 text-xl font-regular">{t.appName} 💜</span>
           <span className="mt-0.5 text-xs text-sidebar-foreground/70">{t.dashboard.profileRole}</span>
         </div>
       </SidebarHeader>
 
       <SidebarContent className="gap-0 px-3 py-2">
         <SidebarMenu className="gap-1.5">
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              className={itemCls}
-              isActive={page === "dashboard"}
-              onClick={() => {
-                setPage("dashboard")
-                close()
-              }}
-            >
-              <Emoji>🏠</Emoji> <span>{t.dashboard.nav}</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              className={itemCls}
-              isActive={page === "notes" && isAll}
-              onClick={() => {
-                setFilters({ ...filters, category: undefined, tags: [] })
-                setPage("notes")
-                close()
-              }}
-            >
-              <Emoji>📝</Emoji> <span className="flex-1">{t.notes}</span>
-              <span className="text-xs opacity-70">{notes.length}</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton className={itemCls} onClick={goCalendar}>
-              <Emoji>📅</Emoji> <span>{t.dashboard.calendarNav}</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-
-          <SidebarMenuItem>
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                render={<SidebarMenuButton className={itemCls} isActive={!!filters.category} />}
+          {nav.map((n) => (
+            <SidebarMenuItem key={n.href}>
+              <SidebarMenuButton
+                className={itemCls}
+                isActive={n.active}
+                render={<Link href={n.href} onClick={close} />}
               >
-                <Emoji>📚</Emoji> <span className="flex-1">{t.categories}</span>
-                <span className="text-xs opacity-70">{categories.size}</span>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent side="left" align="start" className="min-w-44">
-                {categories.size === 0 && (
-                  <p className="px-2 py-1.5 text-xs text-muted-foreground">{t.noCategories}</p>
-                )}
-                {[...categories].sort().map(([c, count]) => (
-                  <DropdownMenuItem
-                    key={c}
-                    onClick={() => {
-                      setFilters({ ...filters, category: filters.category === c ? undefined : c })
-                      close()
-                    }}
-                  >
-                    <Check className={cn("size-4", filters.category !== c && "opacity-0")} />
-                    <span className="flex-1">{c}</span>
-                    <span className="text-xs text-muted-foreground">{count}</span>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </SidebarMenuItem>
-
-          <SidebarMenuItem>
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                render={<SidebarMenuButton className={itemCls} isActive={filters.tags.length > 0} />}
-              >
-                <Emoji>🏷️</Emoji> <span className="flex-1">{t.hashtags}</span>
-                <span className="text-xs opacity-70">{tags.size}</span>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent side="left" align="start" className="min-w-44">
-                {tags.size === 0 && <p className="px-2 py-1.5 text-xs text-muted-foreground">{t.noTags}</p>}
-                {[...tags].sort().map(([tag, count]) => {
-                  const on = filters.tags.includes(tag)
-                  return (
-                    <DropdownMenuItem
-                      key={tag}
-                      onClick={() => {
-                        setFilters({
-                          ...filters,
-                          tags: on ? filters.tags.filter((x) => x !== tag) : [...filters.tags, tag],
-                        })
-                        close()
-                      }}
-                    >
-                      <Check className={cn("size-4", !on && "opacity-0")} />
-                      <span className="flex-1" dir="auto">#{tag}</span>
-                      <span className="text-xs text-muted-foreground">{count}</span>
-                    </DropdownMenuItem>
-                  )
-                })}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </SidebarMenuItem>
+                <Emoji>{n.emoji}</Emoji>
+                <span className="flex-1">{n.label}</span>
+                {n.badge !== undefined && <span className="text-xs opacity-70">{n.badge}</span>}
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
         </SidebarMenu>
       </SidebarContent>
 
@@ -196,8 +96,9 @@ export function AppSidebar({
         </div>
         <div className="flex items-center justify-between px-1">
           {[
-            { label: t.io.export, icon: <Download />, onClick: onExport },
-            { label: t.io.import, icon: <Upload />, onClick: onImport },
+            { label: `${t.io.export} JSON`, icon: <Download />, onClick: onExport },
+            { label: t.io.exportCsv, icon: <FileSpreadsheet />, onClick: onExportCsv },
+            { label: `${t.io.import} (${t.io.importHint})`, icon: <Upload />, onClick: onImport },
             { label: t.dashboard.loadDemoUi, icon: <Sparkles />, onClick: onDemo },
             {
               label: t.theme.toggle,

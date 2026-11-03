@@ -42,7 +42,7 @@ import {
   type Status,
 } from "@/lib/types"
 
-export type DialogTarget = { note?: Note; status?: Status } | null
+export type DialogTarget = { note?: Note; status?: Status; deadline?: string } | null
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -68,7 +68,7 @@ function NoteForm({
   const [tags, setTags] = React.useState<string[]>(n?.tags ?? [])
   const [tagInput, setTagInput] = React.useState("")
   const [priority, setPriority] = React.useState<Priority | undefined>(n?.priority)
-  const [deadline, setDeadline] = React.useState<string | undefined>(n?.deadline)
+  const [deadline, setDeadline] = React.useState<string | undefined>(n?.deadline ?? target.deadline)
   const [status, setStatus] = React.useState<Status>(n?.status ?? target.status ?? "todo")
   const [color, setColor] = React.useState<NoteColor | undefined>(n?.color)
   const [links, setLinks] = React.useState(n?.links ?? [])
@@ -329,7 +329,7 @@ export function NoteDialog({
           </Button>
         </DialogHeader>
         {target && (
-          <NoteForm key={target.note?.id ?? `new-${target.status ?? ""}`} target={target} onClose={onClose} />
+          <NoteForm key={target.note?.id ?? `new-${target.status ?? ""}-${target.deadline ?? ""}`} target={target} onClose={onClose} />
         )}
       </DialogContent>
     </Dialog>

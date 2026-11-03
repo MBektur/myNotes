@@ -11,6 +11,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
+import { exportCsv } from "@/lib/csv"
 import { exportJson, parseImport } from "@/lib/export"
 import { t } from "@/lib/i18n"
 import { useNotes } from "@/lib/notes-store"
@@ -26,6 +27,11 @@ export function useImportExport() {
     toast.success(t.io.exported)
   }, [notes])
 
+  const doExportCsv = React.useCallback(() => {
+    exportCsv(notes)
+    toast.success(t.io.exportedCsv)
+  }, [notes])
+
   const pickFile = React.useCallback(() => inputRef.current?.click(), [])
 
   const ui = (
@@ -33,7 +39,7 @@ export function useImportExport() {
       <input
         ref={inputRef}
         type="file"
-        accept="application/json,.json"
+        accept="application/json,.json,text/csv,.csv"
         className="hidden"
         onChange={async (e) => {
           const file = e.target.files?.[0]
@@ -81,5 +87,5 @@ export function useImportExport() {
     </>
   )
 
-  return { doExport, pickFile, ui }
+  return { doExport, doExportCsv, pickFile, ui }
 }

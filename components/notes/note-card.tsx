@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils"
 import { t } from "@/lib/i18n"
 import { isOverdue, progressOf } from "@/lib/filters"
 import { useNotes } from "@/lib/notes-store"
-import { STATUSES, noteColor, type Note } from "@/lib/types"
+import { NOTE_COLORS, STATUSES, noteColor, type Note } from "@/lib/types"
 
 export const priorityStyle: Record<string, string> = {
   low: "bg-slate-500/15 text-slate-700 dark:text-slate-300",
@@ -82,7 +82,8 @@ export function NoteCard({
   onDelete: (n: Note) => void
   className?: string
 }) {
-  const { toggleChecklist } = useNotes()
+  const { toggleChecklist, update } = useNotes()
+  const current = noteColor(note)
   const progress = progressOf(note)
   const overdue = isOverdue(note)
 
@@ -116,7 +117,7 @@ export function NoteCard({
         className="mt-2 block w-full text-start"
         onClick={() => onEdit(note)}
       >
-        <h3 className="font-semibold leading-snug break-words">
+        <h3 className="font-medium leading-snug break-words">
           {note.title || (note.content ? "" : t.untitled)}
         </h3>
         {note.content && (
@@ -185,6 +186,29 @@ export function NoteCard({
           )}
         </div>
       )}
+
+      <div
+        className="mt-3 flex items-center gap-1.5 border-t border-foreground/10 pt-2.5"
+        onPointerDown={(e) => e.stopPropagation()}
+        role="radiogroup"
+        aria-label={t.form.color}
+      >
+        {NOTE_COLORS.map((c) => (
+          <button
+            key={c}
+            type="button"
+            role="radio"
+            aria-checked={current === c}
+            aria-label={c}
+            title={c}
+            onClick={() => update(note.id, { color: c })}
+            className={cn(
+              `note-${c} note-surface size-5 rounded-full border border-foreground/15 shadow-sm transition-transform hover:scale-125`,
+              current === c && "ring-2 ring-foreground/60 ring-offset-1 ring-offset-transparent"
+            )}
+          />
+        ))}
+      </div>
     </div>
   )
 }

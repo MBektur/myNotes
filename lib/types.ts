@@ -14,6 +14,13 @@ export const NOTE_COLORS = [
 ] as const
 export type NoteColor = (typeof NOTE_COLORS)[number]
 
+export const STATUS_VISUAL: Record<Status, { icon: string; color: NoteColor }> = {
+  todo: { icon: "📝", color: "blue" },
+  in_progress: { icon: "🚀", color: "orange" },
+  review: { icon: "🔍", color: "purple" },
+  done: { icon: "✅", color: "green" },
+}
+
 export type NoteLink = { id: string; url: string; label?: string }
 export type ChecklistItem = { id: string; text: string; done: boolean }
 

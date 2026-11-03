@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Download, KanbanSquare, LayoutGrid, List, Plus } from "lucide-react"
+import { Download, FileSpreadsheet, KanbanSquare, LayoutGrid, List, Plus } from "lucide-react"
 import {
   Command,
   CommandEmpty,
@@ -23,6 +23,7 @@ export function CommandSearch({
   onNew,
   setView,
   onExport,
+  onExportCsv,
 }: {
   open: boolean
   setOpen: (o: boolean) => void
@@ -31,6 +32,7 @@ export function CommandSearch({
   onNew: () => void
   setView: (v: ViewMode) => void
   onExport: () => void
+  onExportCsv: () => void
 }) {
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -67,7 +69,8 @@ export function CommandSearch({
               <CommandItem onSelect={run(() => setView("kanban"))}><KanbanSquare /> {t.view.kanban}</CommandItem>
               <CommandItem onSelect={run(() => setView("card"))}><LayoutGrid /> {t.view.card}</CommandItem>
               <CommandItem onSelect={run(() => setView("list"))}><List /> {t.view.list}</CommandItem>
-              <CommandItem onSelect={run(onExport)}><Download /> {t.io.export}</CommandItem>
+              <CommandItem onSelect={run(onExport)}><Download /> {t.io.export} JSON</CommandItem>
+              <CommandItem onSelect={run(onExportCsv)}><FileSpreadsheet /> {t.io.exportCsv}</CommandItem>
             </CommandGroup>
             <CommandSeparator />
             <CommandGroup heading={t.results}>

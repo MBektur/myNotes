@@ -1,19 +1,14 @@
 import type { Metadata, Viewport } from "next"
-import localFont from "next/font/local"
+import { Lateef, Vazirmatn } from "next/font/google"
 import { ThemeProvider } from "next-themes"
 import { Toaster } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { AuthGate } from "@/components/auth/auth-gate"
 import "./globals.css"
 
-// Google Fonts'taki Vazirmatn (OFL) — peqet U+0649 ("ى") herpi U+06CC glifigha
-// baghlanghan; shundaq Uyghurche "ى" toghra sizilidu. (Qara: app/fonts/README.md)
-const vazirmatn = localFont({
-  src: "./fonts/VazirmatnUG.woff2",
-  variable: "--font-vazirmatn",
-  weight: "100 900",
-  display: "swap",
-})
+// Vazirmatn: gövde metni · Lateef: başlıklar (ikisi de Google Fonts, Arapça alt kümesi)
+const vazirmatn = Vazirmatn({ variable: "--font-vazirmatn", subsets: ["arabic", "latin"] })
+const lateef = Lateef({ variable: "--font-lateef", subsets: ["arabic", "latin"], weight: ["400", "700", "800"] })
 
 export const metadata: Metadata = {
   title: "myNotes",
@@ -27,7 +22,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html dir="rtl"
       lang="ug"
       suppressHydrationWarning
-      className={`${vazirmatn.variable} h-full antialiased`}
+      className={`${vazirmatn.variable} ${lateef.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>

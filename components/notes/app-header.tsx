@@ -28,7 +28,7 @@ export function AppHeader({
     <header className="flex flex-wrap items-center gap-3">
       <SidebarTrigger className="clay size-10 shrink-0 rounded-2xl md:hidden" />
       <div className="min-w-0 flex-1">
-        <h1 className="truncate text-2xl font-extrabold sm:text-3xl">{title}</h1>
+        <h1 className="truncate text-3xl font-regular sm:text-4xl">{title}</h1>
         {subtitle && <p className="truncate text-sm text-muted-foreground sm:text-base">{subtitle}</p>}
       </div>
       <div className="relative order-last w-full sm:order-none sm:w-56 lg:w-64">
@@ -64,7 +64,7 @@ export function AppHeader({
       >
         <span className="dark:hidden">🌤️</span>
         <span className="hidden dark:inline"><Moon className="size-5" /></span>
-        
+
       </button>
       <div className="clay hidden size-11 shrink-0 overflow-hidden rounded-2xl p-0.5 sm:block">
         <Image src="/img/3d-avatar.jpg" alt="" width={88} height={88} className="size-full rounded-[0.85rem] object-cover" />

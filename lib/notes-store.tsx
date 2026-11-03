@@ -41,10 +41,13 @@ function notesReducer(state: Note[], a: Action): Note[] {
       return state
     case "add":
       return [a.note, ...state]
-    case "update":
+    case "update": {
+      // Yalghuz renk özgirishi "yéngilanghan waqit"ni özgertmeydu, bolmisa kart tertipte sekrep ketidu.
+      const colorOnly = Object.keys(a.patch).every((k) => k === "color")
       return state.map((n) =>
-        n.id === a.id ? { ...n, ...a.patch, updatedAt: now } : n
+        n.id === a.id ? { ...n, ...a.patch, updatedAt: colorOnly ? n.updatedAt : now } : n
       )
+    }
     case "remove":
       return state.filter((n) => n.id !== a.id)
     case "move":

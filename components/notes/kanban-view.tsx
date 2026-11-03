@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { t } from "@/lib/i18n"
 import { useNotes } from "@/lib/notes-store"
-import { STATUSES, type Note, type Status } from "@/lib/types"
+import { STATUSES, STATUS_VISUAL, type Note, type Status } from "@/lib/types"
 import { NoteCard } from "./note-card"
 
 type Handlers = {
@@ -56,8 +56,13 @@ function Column({
       )}
     >
       <header className="flex items-center justify-between px-2 py-1.5">
-        <h2 className="text-sm font-semibold">
-          {t.statuses[status]}{" "}
+        <h2 className="flex items-center gap-2 text-xl font-regular">
+          <span
+            aria-hidden
+            className={`note-${STATUS_VISUAL[status].color} size-3 shrink-0 rounded-full border border-foreground/20 bg-(--note-chip)`}
+          />
+          <span aria-hidden>{STATUS_VISUAL[status].icon}</span>
+          {t.statuses[status]}
           <span className="font-normal text-muted-foreground">{notes.length}</span>
         </h2>
         <Button variant="ghost" size="icon-sm" onClick={() => h.onAdd(status)} aria-label={t.newNote}>
@@ -105,7 +110,7 @@ export function KanbanView({ notes, ...h }: { notes: Note[] } & Handlers) {
       </div>
       <DragOverlay>
         {active ? (
-          <NoteCard note={active} onEdit={() => {}} onDelete={() => {}} className="rotate-2 shadow-xl" />
+          <NoteCard note={active} onEdit={() => { }} onDelete={() => { }} className="rotate-2 shadow-xl" />
         ) : null}
       </DragOverlay>
     </DndContext>
