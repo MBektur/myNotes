@@ -37,6 +37,7 @@ export function LoginScreen({ onSuccess }: { onSuccess: () => void }) {
         <div className="space-y-2">
           <Input
             type="password"
+            dir="ltr"
             autoFocus
             autoComplete="current-password"
             placeholder={t.login.password}

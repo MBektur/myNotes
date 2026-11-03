@@ -24,6 +24,7 @@ import { AppHeader } from "./app-header"
 import { AppSidebar } from "./app-sidebar"
 import { CommandSearch } from "./command-search"
 import { useImportExport } from "./import-export"
+import { MobileBottomNav } from "./mobile-bottom-nav"
 import { NoteDialog, type DialogTarget } from "./note-dialog"
 
 type Shell = {
@@ -94,7 +95,7 @@ function Inner({ children }: { children: React.ReactNode }) {
           onLogout={logout}
         />
         <SidebarInset className="app-bg min-w-0 bg-transparent">
-          <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
+          <div className="flex flex-1 flex-col gap-4 p-4 pb-28 md:p-6">
             <AppHeader
               title={onNotesPage ? t.notes : pathname.startsWith("/calendar") ? t.calendar.title : t.dashboard.greeting}
               subtitle={onNotesPage ? undefined : pathname.startsWith("/calendar") ? t.calendar.subtitle : t.dashboard.subtitle}
@@ -112,6 +113,7 @@ function Inner({ children }: { children: React.ReactNode }) {
             {children}
           </div>
         </SidebarInset>
+        <MobileBottomNav onNew={() => add()} />
 
         <NoteDialog target={target} onClose={() => setTarget(null)} />
         <CommandSearch

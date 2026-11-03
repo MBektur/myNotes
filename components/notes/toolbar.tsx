@@ -32,7 +32,7 @@ export function Toolbar({
         <ToggleGroupItem value="card" aria-label={t.view.card}><LayoutGrid /></ToggleGroupItem>
         <ToggleGroupItem value="list" aria-label={t.view.list}><List /></ToggleGroupItem>
       </ToggleGroup>
-      <Button onClick={onNew}>
+      <Button onClick={onNew} className="max-md:hidden">
         <Plus /> {t.newNote}
       </Button>
     </div>
