@@ -8,13 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { Checkbox } from "@/components/ui/checkbox"
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
+import { SidePanel } from "@/components/ui/side-panel"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -211,7 +205,7 @@ function NoteForm({
 
   return (
     <form onSubmit={save} className="flex min-h-0 flex-1 flex-col">
-      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4">
+      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-5 py-4">
         <Field label={t.form.title} icon={<Type />}>
           <Input value={title} onChange={(e) => setTitle(ug(e.target.value))} autoFocus />
         </Field>
@@ -473,10 +467,10 @@ function NoteForm({
         </Field>
       </div>
 
-      <DialogFooter className="mx-0 mb-0 shrink-0 flex-row justify-end gap-2 px-4 py-3">
+      <div className="flex shrink-0 justify-end gap-2 border-t bg-muted/60 px-5 py-3">
         <Button type="submit">{t.form.save}</Button>
         <Button type="button" variant="outline" onClick={onClose}>{t.form.cancel}</Button>
-      </DialogFooter>
+      </div>
     </form>
   )
 }
@@ -488,23 +482,21 @@ export function NoteDialog({
   target: DialogTarget
   onClose: () => void
 }) {
+  // Panel yépilish animatsiyesi waqtida form birdinla yoqap ketmisun
+  const [kept, setKept] = React.useState<DialogTarget>(target)
+  if (target && target !== kept) setKept(target)
+  const shown = target ?? kept
+
   return (
-    <Dialog open={!!target} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent
-        dir="rtl"
-        showCloseButton={false}
-        className="flex max-h-[100dvh] flex-col gap-0 p-0 max-sm:top-0 max-sm:left-0 max-sm:h-[100dvh] max-sm:max-w-none max-sm:translate-x-0 max-sm:translate-y-0 max-sm:rounded-none sm:max-h-[90vh] sm:max-w-xl"
-      >
-        <DialogHeader className="shrink-0 flex-row items-center justify-between gap-2 border-b px-4 py-3">
-          <DialogTitle className="text-base">{target?.note ? t.editNote : t.newNote}</DialogTitle>
-          <Button type="button" variant="ghost" size="icon-sm" onClick={onClose} aria-label={t.form.cancel}>
-            <X />
-          </Button>
-        </DialogHeader>
-        {target && (
-          <NoteForm key={target.note?.id ?? `new-${target.status ?? ""}-${target.deadline ?? ""}`} target={target} onClose={onClose} />
-        )}
-      </DialogContent>
-    </Dialog>
+    <SidePanel
+      open={!!target}
+      onOpenChange={(o) => !o && onClose()}
+      title={shown?.note ? t.editNote : t.newNote}
+      scroll={false}
+    >
+      {shown && (
+        <NoteForm key={shown.note?.id ?? `new-${shown.status ?? ""}-${shown.deadline ?? ""}`} target={shown} onClose={onClose} />
+      )}
+    </SidePanel>
   )
 }

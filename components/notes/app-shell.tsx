@@ -131,6 +131,10 @@ function Inner({ children }: { children: React.ReactNode }) {
         <NoteDetailPanel
           note={detail}
           onClose={() => setDetail(null)}
+          onDelete={(n) => {
+            setDetail(null)
+            setToDelete(n)
+          }}
           onEdit={(n) => {
             setDetail(null)
             edit(n)

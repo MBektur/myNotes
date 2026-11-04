@@ -113,7 +113,7 @@ export function SchedulePage() {
             </Button>
           </div>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:flex-wrap md:overflow-visible md:px-0 md:pb-0">
           {people.map((p) => {
             const on = selected.has(p.id)
             return (
@@ -123,7 +123,7 @@ export function SchedulePage() {
                 aria-pressed={on}
                 onClick={() => toggle(p.id)}
                 className={cn(
-                  `note-${p.color} flex items-center gap-2 rounded-full border-2 px-4 py-1.5 text-sm transition`,
+                  `note-${p.color} flex shrink-0 items-center gap-2 rounded-full border-2 px-4 py-1.5 text-sm whitespace-nowrap transition`,
                   on ? "note-surface border-[var(--note-chip)] shadow-sm" : "border-transparent bg-muted/60 opacity-60"
                 )}
               >
@@ -133,7 +133,7 @@ export function SchedulePage() {
             )
           })}
         </div>
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
+        <div className="no-scrollbar -mx-4 flex items-center gap-x-4 gap-y-1.5 overflow-x-auto px-4 pb-1 text-xs whitespace-nowrap text-muted-foreground md:mx-0 md:flex-wrap md:overflow-visible md:px-0 md:pb-0 [&>*]:shrink-0">
           {[...hues].map(([name, hue]) => (
             <SubjectBadge key={name} subject={name} hue={hue} className="text-xs" />
           ))}

@@ -34,7 +34,10 @@ export function SidePanel({
   onOpenChange,
   title,
   badges,
+  description,
+  headerClassName,
   footer,
+  scroll = true,
   children,
 }: {
   open: boolean
@@ -42,7 +45,12 @@ export function SidePanel({
   title: React.ReactNode
   /** ماۋزۇنىڭ ئۈستىدىكى كىچىك بەلگىلەر (badge) */
   badges?: React.ReactNode
+  /** ماۋزۇنىڭ ئاستىدىكى كىچىك ئىزاھات (mes. chisla) */
+  description?: React.ReactNode
+  headerClassName?: string
   footer?: React.ReactNode
+  /** false: mezmun öz ichide scroll qilidu (mes. form + ayrim footer), panel sirttin scroll qilmaydu */
+  scroll?: boolean
   children: React.ReactNode
 }) {
   const [width, setWidth] = React.useState(readWidth)
@@ -72,9 +80,10 @@ export function SidePanel({
             "border-e transition duration-200 ease-out data-ending-style:-translate-x-8 data-ending-style:opacity-0 data-starting-style:-translate-x-8 data-starting-style:opacity-0"
           )}
         >
-          <header className="relative shrink-0 space-y-2 border-b px-5 pt-5 pb-4 pe-14">
+          <header className={cn("relative shrink-0 space-y-2 border-b px-5 pt-5 pb-4 pe-14", headerClassName)}>
             {badges && <div className="flex flex-wrap items-center gap-1.5">{badges}</div>}
             <Dialog.Title className="font-heading text-2xl leading-tight break-words">{title}</Dialog.Title>
+            {description && <div className="text-xs text-foreground/60">{description}</div>}
             <Dialog.Close
               render={<Button variant="ghost" size="icon" className="absolute end-3 top-3 rounded-full" aria-label={t.detail.close} />}
             >
@@ -82,7 +91,7 @@ export function SidePanel({
             </Dialog.Close>
           </header>
 
-          <div className="min-h-0 flex-1 overflow-y-auto">{children}</div>
+          <div className={cn("min-h-0 flex-1", scroll ? "overflow-y-auto" : "flex flex-col")}>{children}</div>
 
           {footer && <div className="flex shrink-0 justify-end gap-2 border-t bg-muted/60 px-5 py-3">{footer}</div>}
 

@@ -1,7 +1,8 @@
 "use client"
 
 import * as React from "react"
-import { Activity, AlignLeft, CalendarDays, CheckSquare, Flag, Hash, ExternalLink, FileText, Folder, ImageIcon, Link2, Pencil, X } from "lucide-react"
+import { format, differenceInCalendarDays, parseISO } from "date-fns"
+import { Activity, AlignLeft, CalendarDays, CheckSquare, Flag, Hash, ExternalLink, FileText, Folder, ImageIcon, Link2, Palette, Pencil, Trash2, X } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -14,26 +15,34 @@ import { useNotes } from "@/lib/notes-store"
 import { PRIORITY_VISUAL, STATUS_VISUAL, noteColor, type Attachment, type Note } from "@/lib/types"
 import { priorityStyle } from "./note-card"
 
-function Section({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
+function Section({
+  title, icon, count, children,
+}: { title: string; icon: React.ReactNode; count?: React.ReactNode; children: React.ReactNode }) {
   return (
     <section className="space-y-2">
-      <h4 className="flex items-center gap-1.5 text-xs font-medium text-foreground/60 [&>svg]:size-3.5">
+      <h4 className="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-foreground/60 [&>svg]:size-3.5">
         {icon} {title}
+        {count !== undefined && <span className="ms-auto rounded-full bg-muted px-2 py-px text-[11px] font-medium tabular-nums text-foreground/70">{count}</span>}
       </h4>
       {children}
     </section>
   )
 }
 
-function Row({ label, icon, children }: { label: string; icon: React.ReactNode; children: React.ReactNode }) {
+/** خاسلىق قۇرى: سول تەرەپتە ئىكون + ماۋزۇ، ئوڭ تەرەپتە قىممەت */
+function Prop({ label, icon, children }: { label: string; icon: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-      <dt className="flex shrink-0 items-center gap-1.5 text-xs font-medium text-foreground/60 [&>svg]:size-3.5">
+    <div className="grid grid-cols-[7rem_1fr] items-center gap-3 px-3.5 py-2.5">
+      <dt className="flex items-center gap-1.5 text-xs text-foreground/60 [&>svg]:size-3.5 [&>svg]:shrink-0">
         {icon} {label}
       </dt>
-      <dd className="flex min-w-0 flex-wrap items-center gap-1.5">{children}</dd>
+      <dd className="flex min-w-0 flex-wrap items-center gap-1.5 text-sm">{children}</dd>
     </div>
   )
+}
+
+const fmtDateTime = (iso: string) => {
+  try { return format(parseISO(iso), "yyyy-MM-dd HH:mm") } catch { return iso }
 }
 
 type Og = { url: string; title?: string; description?: string; image?: string; siteName?: string }
@@ -129,65 +138,92 @@ function Detail({ note }: { note: Note }) {
   const { toggleChecklist } = useNotes()
   const images = (note.attachments ?? []).filter((a) => a.kind === "image")
   const pdfs = (note.attachments ?? []).filter((a) => a.kind === "pdf")
+  const done = note.checklist.filter((c) => c.done).length
+  const total = note.checklist.length
+  const overdue = isOverdue(note)
+  const left = note.deadline ? differenceInCalendarDays(parseISO(note.deadline), new Date()) : null
+  const rel =
+    left === null || note.status === "done" ? null : left === 0 ? t.today : left > 0 ? t.detail.daysLeft(left) : t.detail.daysAgo(-left)
+  const sv = STATUS_VISUAL[note.status]
+
   return (
-    <div className="space-y-4 px-5 py-4 text-foreground">
-      <dl className="space-y-3">
-        <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-          <Row label={t.status} icon={<Activity />}>
-            <Badge variant="secondary">
-              <span aria-hidden>{STATUS_VISUAL[note.status].icon}</span> {t.statuses[note.status]}
-            </Badge>
-          </Row>
-          {note.category && (
-            <Row label={t.form.category} icon={<Folder />}>
-              <Badge variant="secondary">{note.category}</Badge>
-            </Row>
-          )}
-        </div>
+    <div className="min-h-full space-y-5 bg-muted/30 px-5 py-5 text-foreground">
+      <dl className="divide-y overflow-hidden rounded-2xl border bg-background shadow-xs">
+        <Prop label={t.status} icon={<Activity />}>
+          <span className={cn(`note-${sv.color} note-surface inline-flex items-center gap-1 rounded-full border border-foreground/10 px-2.5 py-0.5 text-xs font-medium`)}>
+            <span aria-hidden>{sv.icon}</span> {t.statuses[note.status]}
+          </span>
+        </Prop>
+        {note.priority && (
+          <Prop label={t.priority} icon={<Flag />}>
+            <span className={cn("inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium", priorityStyle[note.priority])}>
+              <span aria-hidden>{PRIORITY_VISUAL[note.priority].icon}</span> {t.priorities[note.priority]}
+            </span>
+          </Prop>
+        )}
+        {note.deadline && (
+          <Prop label={t.form.deadline} icon={<CalendarDays />}>
+            <span className={cn("tabular-nums", overdue ? "font-medium text-red-600 dark:text-red-400" : "text-foreground/80")}>{note.deadline}</span>
+            {rel && (
+              <span className={cn("rounded-full px-2 py-px text-[11px] font-medium", overdue ? "bg-red-500/15 text-red-600 dark:text-red-400" : "bg-muted text-foreground/70")}>
+                {rel}
+              </span>
+            )}
+          </Prop>
+        )}
+        {note.category && (
+          <Prop label={t.form.category} icon={<Folder />}>
+            <Badge variant="secondary">{note.category}</Badge>
+          </Prop>
+        )}
         {note.tags.length > 0 && (
-          <Row label={t.form.tags} icon={<Hash />}>
+          <Prop label={t.form.tags} icon={<Hash />}>
             {note.tags.map((tag) => (
               <Badge key={tag} variant="secondary">#{tag}</Badge>
             ))}
-          </Row>
+          </Prop>
         )}
-        {note.priority && (
-          <Row label={t.priority} icon={<Flag />}>
-            <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium", priorityStyle[note.priority])}>
-              <span aria-hidden>{PRIORITY_VISUAL[note.priority].icon}</span> {t.priorities[note.priority]}
-            </span>
-          </Row>
-        )}
-        {note.deadline && (
-          <Row label={t.form.deadline} icon={<CalendarDays />}>
-            <span
-              className={cn(
-                "text-sm",
-                isOverdue(note) ? "font-medium text-red-600 dark:text-red-400" : "text-foreground/80"
-              )}
-            >
-              {note.deadline}
-            </span>
-          </Row>
-        )}
+        <Prop label={t.form.color} icon={<Palette />}>
+          <span className={cn(`note-${noteColor(note)} note-surface size-5 rounded-full border border-foreground/20 shadow-sm`)} title={noteColor(note)} />
+        </Prop>
       </dl>
 
       {note.content && (
         <Section title={t.form.content} icon={<AlignLeft />}>
-          <p className="text-sm leading-relaxed whitespace-pre-line">{note.content}</p>
+          <div className="rounded-2xl border bg-background p-4 shadow-xs">
+            <p className="text-sm leading-7 break-words whitespace-pre-line">{note.content}</p>
+          </div>
+        </Section>
+      )}
+
+      {total > 0 && (
+        <Section title={t.detail.checklist} icon={<CheckSquare />} count={`${done}/${total}`}>
+          <div className="space-y-3 rounded-2xl border bg-background p-4 shadow-xs">
+            <div className="h-1.5 overflow-hidden rounded-full bg-muted" aria-hidden>
+              <div className="h-full rounded-full bg-emerald-500 transition-[width]" style={{ width: `${(done / total) * 100}%` }} />
+            </div>
+            <ul className="space-y-2">
+              {note.checklist.map((c) => (
+                <li key={c.id} className="flex items-center gap-2.5 text-sm">
+                  <Checkbox checked={c.done} onCheckedChange={() => toggleChecklist(note.id, c.id)} />
+                  <span className={cn("min-w-0 break-words", c.done && "text-foreground/50 line-through")}>{c.text}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </Section>
       )}
 
       {images.length > 0 && (
-        <Section title={t.detail.images} icon={<ImageIcon />}>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+        <Section title={t.detail.images} icon={<ImageIcon />} count={images.length}>
+          <div className="grid grid-cols-2 gap-2">
             {images.map((a) => <ImageItem key={a.id} a={a} />)}
           </div>
         </Section>
       )}
 
       {pdfs.length > 0 && (
-        <Section title={t.detail.pdfs} icon={<FileText />}>
+        <Section title={t.detail.pdfs} icon={<FileText />} count={pdfs.length}>
           <div className="space-y-2">
             {pdfs.map((a) => <PdfItem key={a.id} a={a} />)}
           </div>
@@ -195,7 +231,7 @@ function Detail({ note }: { note: Note }) {
       )}
 
       {note.links.length > 0 && (
-        <Section title={t.detail.links} icon={<Link2 />}>
+        <Section title={t.detail.links} icon={<Link2 />} count={note.links.length}>
           <div className="space-y-2">
             {note.links.map((l) => (
               <LinkPreview
@@ -207,20 +243,6 @@ function Detail({ note }: { note: Note }) {
           </div>
         </Section>
       )}
-
-      {note.checklist.length > 0 && (
-        <Section title={t.detail.checklist} icon={<CheckSquare />}>
-          <ul className="space-y-1.5">
-            {note.checklist.map((c) => (
-              <li key={c.id} className="flex items-center gap-2 text-sm">
-                <Checkbox checked={c.done} onCheckedChange={() => toggleChecklist(note.id, c.id)} />
-                <span className={cn(c.done && "text-foreground/50 line-through")}>{c.text}</span>
-              </li>
-            ))}
-          </ul>
-        </Section>
-      )}
-
     </div>
   )
 }
@@ -229,10 +251,12 @@ export function NoteDetailPanel({
   note,
   onClose,
   onEdit,
+  onDelete,
 }: {
   note: Note | null
   onClose: () => void
   onEdit: (n: Note) => void
+  onDelete: (n: Note) => void
 }) {
   // Canlı xatirini al (checklist özgirishi qatarliq yéngilinishlar üchün).
   const { notes } = useNotes()
@@ -241,27 +265,49 @@ export function NoteDetailPanel({
   const [kept, setKept] = React.useState<Note | null>(live)
   if (live && live !== kept) setKept(live)
   const shown = live ?? kept
+  const sv = shown ? STATUS_VISUAL[shown.status] : null
 
   return (
     <SidePanel
       open={!!live}
       onOpenChange={(o) => !o && onClose()}
-      title={
-        shown ? (
-          <span className="flex items-center gap-2">
-            <span
-              aria-hidden
-              title={noteColor(shown)}
-              className={cn(`note-${noteColor(shown)} note-surface size-4 shrink-0 rounded-full border border-foreground/20 shadow-sm`)}
-            />
-            {shown.title || (shown.content ? "" : t.untitled)}
+      headerClassName={shown ? `note-${noteColor(shown)} note-surface` : undefined}
+      badges={
+        shown &&
+        sv && (
+          <>
+            <span className={cn(`note-${sv.color} rounded-full border border-foreground/15 bg-white/60 px-2.5 py-0.5 text-xs font-medium dark:bg-white/10`)}>
+              <span aria-hidden>{sv.icon}</span> {t.statuses[shown.status]}
+            </span>
+            {shown.priority && (
+              <span className={cn("rounded-full px-2.5 py-0.5 text-xs font-medium", priorityStyle[shown.priority])}>
+                {PRIORITY_VISUAL[shown.priority].icon} {t.priorities[shown.priority]}
+              </span>
+            )}
+            {isOverdue(shown) && (
+              <span className="rounded-full bg-red-500/15 px-2.5 py-0.5 text-xs font-medium text-red-600 dark:text-red-400">
+                {t.deadlineFilter.overdue}
+              </span>
+            )}
+          </>
+        )
+      }
+      title={shown ? shown.title || (shown.content ? shown.content.slice(0, 60) : t.untitled) : null}
+      description={
+        shown && (
+          <span className="tabular-nums">
+            {t.detail.created} {fmtDateTime(shown.createdAt)}
+            {shown.updatedAt !== shown.createdAt && <> · {t.detail.updated} {fmtDateTime(shown.updatedAt)}</>}
           </span>
-        ) : null
+        )
       }
       footer={
         shown && (
           <>
-            <Button type="button" variant="outline" size="sm" onClick={() => onEdit(shown)}>
+            <Button type="button" variant="ghost" size="sm" className="me-auto text-red-600 hover:bg-red-500/10 hover:text-red-600 dark:text-red-400" onClick={() => onDelete(shown)}>
+              <Trash2 /> {t.actions.delete}
+            </Button>
+            <Button type="button" size="sm" onClick={() => onEdit(shown)}>
               <Pencil /> {t.actions.edit}
             </Button>
             <Button type="button" variant="outline" size="sm" onClick={onClose}>

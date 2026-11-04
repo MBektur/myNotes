@@ -93,6 +93,18 @@ function useClamped<T extends HTMLElement>(dep: unknown) {
   return [ref, clamped] as const
 }
 
+/**
+ * Kartning (yaki qurning) héchqandaq boshluq yérige bosqanda ochush üchün.
+ * Ichidiki tugma/checkbox/menyu qatarliq interaktiv elémentlar öz ishini qilidu.
+ * Portal arqiliq échilghan menyu (DOM'da kartning ichide emes) hésabqa élinmaydu.
+ */
+export function openOnClick(e: React.MouseEvent<HTMLElement>, open: () => void) {
+  const target = e.target as Element
+  if (!e.currentTarget.contains(target)) return
+  if (target.closest("button, a, input, label, [role='checkbox'], [role='radio'], [role='menu'], [role='menuitem']")) return
+  open()
+}
+
 export function NoteCard({
   note,
   onEdit,
@@ -114,8 +126,9 @@ export function NoteCard({
 
   return (
     <div
+      onClick={(e) => openOnClick(e, () => open(note))}
       className={cn(
-        `note-${noteColor(note)} note-surface flex flex-col rounded-3xl p-4 text-foreground shadow-[0_8px_20px_-8px_oklch(0.5_0.06_290/0.25),inset_0_2px_3px_oklch(1_0_0/0.7)]`,
+        `note-${noteColor(note)} note-surface flex cursor-pointer flex-col rounded-3xl p-4 text-foreground transition-transform hover:-translate-y-0.5 shadow-[0_8px_20px_-8px_oklch(0.5_0.06_290/0.25),inset_0_2px_3px_oklch(1_0_0/0.7)]`,
         className
       )}
     >
