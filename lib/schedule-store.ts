@@ -4,7 +4,7 @@ import * as React from "react"
 import { defaultLessons, defaultPeople } from "./schedule-data"
 import type { ScheduleData } from "./schedule-csv"
 
-const KEY = "mynotes.schedule.v3"
+const KEY = "mynotes.schedule.v5"
 const DEFAULT: ScheduleData = { people: defaultPeople, lessons: defaultLessons }
 
 let cache: ScheduleData | null = null
@@ -18,7 +18,7 @@ function read(): ScheduleData {
       const d = JSON.parse(raw) as ScheduleData
       if (Array.isArray(d.people) && Array.isArray(d.lessons)) return (cache = d)
     }
-  } catch {}
+  } catch { }
   return (cache = DEFAULT)
 }
 
@@ -28,13 +28,13 @@ function emit() {
 
 export function saveSchedule(data: ScheduleData) {
   cache = data
-  try { localStorage.setItem(KEY, JSON.stringify(data)) } catch {}
+  try { localStorage.setItem(KEY, JSON.stringify(data)) } catch { }
   emit()
 }
 
 export function resetSchedule() {
   cache = DEFAULT
-  try { localStorage.removeItem(KEY) } catch {}
+  try { localStorage.removeItem(KEY) } catch { }
   emit()
 }
 
@@ -43,7 +43,7 @@ const subscribe = (cb: () => void) => {
   return () => { listeners.delete(cb) }
 }
 
-/** Dessleptiki jeduel yaki CSV arqiliq kirgüzülgen jeduel (brauzérda saqlinidu) */
+/** Dessleptiki schedule yaki CSV arqiliq kirgüzülgen schedule (brauzérda saqlinidu) */
 export function useSchedule(): ScheduleData {
   return React.useSyncExternalStore(subscribe, read, () => DEFAULT)
 }

@@ -114,7 +114,6 @@ export function NoteCard({
 
   return (
     <div
-      data-note-card
       className={cn(
         `note-${noteColor(note)} note-surface flex flex-col rounded-3xl p-4 text-foreground shadow-[0_8px_20px_-8px_oklch(0.5_0.06_290/0.25),inset_0_2px_3px_oklch(1_0_0/0.7)]`,
         className
@@ -141,7 +140,7 @@ export function NoteCard({
       <button
         type="button"
         className="mt-2 block w-full text-start"
-        onClick={(e) => open(note, e.currentTarget)}
+        onClick={() => open(note)}
       >
         <h3 ref={titleRef} className="line-clamp-2 font-medium leading-snug break-words">
           {note.title || (note.content ? "" : t.untitled)}
@@ -155,7 +154,7 @@ export function NoteCard({
       {(titleClamped || bodyClamped) && (
         <button
           type="button"
-          onClick={(e) => open(note, e.currentTarget)}
+          onClick={() => open(note)}
           className="mt-1 text-xs font-medium text-foreground/70 underline-offset-2 hover:underline"
         >
           {t.actions.readMore}
@@ -255,7 +254,7 @@ export function NoteCard({
           variant="ghost"
           size="sm"
           className="ms-auto h-6 gap-1 px-2 text-xs"
-          onClick={(e) => open(note, e.currentTarget)}
+          onClick={() => open(note)}
         >
           <Eye className="size-3.5" /> {t.actions.view}
         </Button>

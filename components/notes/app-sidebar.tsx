@@ -42,7 +42,7 @@ export function AppSidebar({
   onImport: () => void
   onDemo: () => void
   onLogout: () => void
-  /** /schedule sehipiside import/export jeduelge baghlinidu */
+  /** /schedule sehipiside import/export schedulege baghlinidu */
   schedule?: { pickFile: () => void; doExport: () => void; doReset: () => void }
 }) {
   const { resolvedTheme, setTheme } = useTheme()
@@ -104,16 +104,16 @@ export function AppSidebar({
           {[
             ...(schedule
               ? [
-                  { label: t.schedule.importCsv, icon: <Upload />, onClick: schedule.pickFile },
-                  { label: t.schedule.exportCsv, icon: <FileSpreadsheet />, onClick: schedule.doExport },
-                  { label: t.schedule.reset, icon: <RotateCcw />, onClick: schedule.doReset },
-                ]
+                { label: t.schedule.importCsv, icon: <Upload />, onClick: schedule.pickFile },
+                { label: t.schedule.exportCsv, icon: <FileSpreadsheet />, onClick: schedule.doExport },
+                { label: t.schedule.reset, icon: <RotateCcw />, onClick: schedule.doReset },
+              ]
               : [
-                  { label: `${t.io.export} JSON`, icon: <Download />, onClick: onExport },
-                  { label: t.io.exportCsv, icon: <FileSpreadsheet />, onClick: onExportCsv },
-                  { label: `${t.io.import} (${t.io.importHint})`, icon: <Upload />, onClick: onImport },
-                  { label: t.dashboard.loadDemoUi, icon: <Sparkles />, onClick: onDemo },
-                ]),
+                { label: `${t.io.export} JSON`, icon: <Download />, onClick: onExport },
+                { label: t.io.exportCsv, icon: <FileSpreadsheet />, onClick: onExportCsv },
+                { label: `${t.io.import} (${t.io.importHint})`, icon: <Upload />, onClick: onImport },
+                { label: t.dashboard.loadDemoUi, icon: <Sparkles />, onClick: onDemo },
+              ]),
             {
               label: t.theme.toggle,
               icon: (

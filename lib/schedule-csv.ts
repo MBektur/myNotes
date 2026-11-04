@@ -9,13 +9,16 @@ export type ScheduleData = { people: Person[]; lessons: Lesson[] }
 // Bir CSV ichide ikki türlük qur: type = person | lesson
 //  Kün: 0 yaki 7 = yekshenbe (pazar), 1 = düshenbe … 6 = shenbe
 //  flexible: 1 bolsa ders waqti éniq emes (özgirishi mumkin)
-//  person: id, name, color, avail      avail  = "1 09:00-13:00;1 15:00-19:00;2 09:00-13:00"  (kün waqit-waqit)
+//  note: erkin izah (ders kodi, sinipxana ...)
+//  person: id, name, color, avail, travel (yol waqti, minut)      avail  = "1 09:00-13:00;1 15:00-19:00;2 09:00-13:00"  (kün waqit-waqit)
 //  lesson: id, personId, day, start, end, subject, from, to, exclude      exclude = "2026-11-09;2026-12-28"
-const COLUMNS = ["type", "id", "name", "color", "avail", "personId", "day", "start", "end", "subject", "from", "to", "exclude", "flexible"] as const
+const COLUMNS = ["type", "id", "name", "color", "avail", "personId", "day", "start", "end", "subject", "from", "to", "exclude", "flexible", "note", "travel"] as const
 
 const esc = (v: string) => (/[",\n\r;]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v)
 const TIME = /^([01]\d|2[0-3]):[0-5]\d$/
 const DATE = /^\d{4}-\d{2}-\d{2}$/
+/** Yol waqti (minut): 0–240 arisidiki pütün san, bolmisa undefined */
+const parseTravel = (v: string) => (/^\d{1,3}$/.test(v) && Number(v) <= 240 ? Number(v) : undefined)
 const split = (v: string) => v.split(";").map((x) => x.trim()).filter(Boolean)
 
 export function scheduleToCsv({ people, lessons }: ScheduleData) {
@@ -24,13 +27,13 @@ export function scheduleToCsv({ people, lessons }: ScheduleData) {
       const avail = Object.entries(p.avail)
         .flatMap(([d, slots]) => (slots ?? []).map((s) => `${d} ${s.start}-${s.end}`))
         .join(";")
-      return ["person", p.id, p.name, p.color, avail, "", "", "", "", "", "", "", "", ""]
+      return ["person", p.id, p.name, p.color, avail, "", "", "", "", "", "", "", "", "", p.travelMin != null ? String(p.travelMin) : ""]
     }),
     ...lessons.map((l) => [
-      "lesson", l.id, "", "", "", l.personId, String(l.day), l.start, l.end, l.subject, l.from, l.to, (l.exclude ?? []).join(";"), l.flexible ? "1" : "",
+      "lesson", l.id, "", "", "", l.personId, String(l.day), l.start, l.end, l.subject, l.from, l.to, (l.exclude ?? []).join(";"), l.flexible ? "1" : "", l.note ?? "",
     ]),
   ]
-  return "﻿" + [COLUMNS.join(","), ...rows.map((r) => r.map(esc).join(","))].join("\r\n")
+  return "﻿" + [COLUMNS.join(","), ...rows.map((r) => [...r, ...Array<string>(Math.max(0, COLUMNS.length - r.length)).fill("")].map(esc).join(","))].join("\r\n")
 }
 
 export function exportScheduleCsv(data: ScheduleData) {
@@ -73,7 +76,7 @@ export function parseScheduleCsv(text: string): (ScheduleData & { skipped: numbe
       }
       if (bad) { skipped++; continue }
       people.push({
-        id, name, avail,
+        id, name, avail, travelMin: parseTravel(get(r, "travel")),
         color: (NOTE_COLORS as readonly string[]).includes(color) ? color : NOTE_COLORS[people.length % NOTE_COLORS.length],
       })
     } else if (type === "lesson") {
@@ -89,6 +92,7 @@ export function parseScheduleCsv(text: string): (ScheduleData & { skipped: numbe
         to: get(r, "to"),
         exclude: split(get(r, "exclude")),
         flexible: /^(1|true|yes|x)$/i.test(get(r, "flexible")) || undefined,
+        note: get(r, "note") || undefined,
       }
       const ok =
         /^[0-7]$/.test(day) && TIME.test(l.start) && TIME.test(l.end) && l.start < l.end &&

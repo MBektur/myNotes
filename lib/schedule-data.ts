@@ -1,6 +1,6 @@
 import type { NoteColor } from "./types"
 
-// Dessleptiki (demo) jeduel melumati: mydata/ders-jediwili.csv din ekelingen (tekrarlar chiqirilghan). Paydilinish CSV arqiliq özgertse bolidu (lib/schedule-csv.ts). Kéyin API/DB gha almashturush üchün peqet shu faylni özgertish kupaye.
+// Dessleptiki (demo) schedule melumati: mydata/ders-jediwili.csv din ekelingen (tekrarlar chiqirilghan). Paydilinish CSV arqiliq özgertse bolidu (lib/schedule-csv.ts). Kéyin API/DB gha almashturush üchün peqet shu faylni özgertish kupaye.
 // Kün: 0 = yekshenbe … 6 = shenbe (Date.getDay() bilen oxshash). Waqit: "HH:MM". Chisla: "yyyy-MM-dd".
 
 export type Slot = { start: string; end: string }
@@ -11,7 +11,11 @@ export type Person = {
   color: NoteColor
   /** Heptilik musaitlik (her hepte tekrarlinidu): kün → boshluq aralighi */
   avail: Partial<Record<number, Slot[]>>
+  /** Her künki birinchi ders aldida / axirqi ders kéyin yolgha ketidighan minut (bolmisa DEFAULT_TRAVEL_MIN) */
+  travelMin?: number
 }
+
+export const DEFAULT_TRAVEL_MIN = 15
 
 /** Her hepte tekrarlinidighan ders: [from, to] arilighidiki, exclude'din bashqa barliq heptilerde bolidu */
 export type Lesson = {
@@ -29,16 +33,19 @@ export type Lesson = {
   exclude?: string[]
   /** Waqti éniq emes / özgirip turidu: kartta sizilghan (dashed) körünidu */
   flexible?: boolean
+  /** Erkin izah (mes. ders kodi, sinipxana): detal kartida körsitilidu */
+  note?: string
 }
 
 export const SCHEDULE_START_HOUR = 8
 export const SCHEDULE_END_HOUR = 21
 
 export const defaultPeople: Person[] = [
-  { id: "muhsine", name: "مۇخسىنە", color: "pink", avail: {} },
-  { id: "ehsan", name: "ئېھسان بەگ", color: "blue", avail: {} },
-  { id: "mahmud", name: "مەھمۇد", color: "green", avail: {} },
-  { id: "musajan", name: "مۇساجان", color: "orange", avail: {} },
+  { id: "muhsine", name: "مۇخسىنە", color: "pink", avail: {}, travelMin: 15 },
+  { id: "ehsan", name: "ئېھسان بەگ", color: "blue", avail: {}, travelMin: 15 },
+  { id: "mahmud", name: "مەھمۇد", color: "green", avail: {}, travelMin: 15 },
+  { id: "musajan", name: "مۇساجان", color: "orange", avail: {}, travelMin: 15 },
+  { id: "teacher", name: "ئوقۇتقۇچى", color: "purple", avail: {}, travelMin: 60 },
 ]
 
 export const defaultLessons: Lesson[] = [
@@ -84,10 +91,16 @@ export const defaultLessons: Lesson[] = [
   { id: "l42", personId: "muhsine", day: 5, start: "20:00", end: "21:00", subject: "ياپون تىلى", from: "2026-10-05", to: "2027-01-17" },
   { id: "l43", personId: "muhsine", day: 0, start: "20:00", end: "21:00", subject: "ياپون تىلى", from: "2026-10-05", to: "2027-01-17" },
   { id: "l44", personId: "muhsine", day: 6, start: "17:00", end: "19:00", subject: "ئانا تىل", from: "2026-10-05", to: "2027-01-17" },
-  { id: "l45", personId: "mahmud", day: 1, start: "16:00", end: "18:00", subject: "ئىنگلىز تىلى", from: "2026-10-05", to: "2027-01-17", flexible: true },
-  { id: "l46", personId: "mahmud", day: 2, start: "16:00", end: "18:00", subject: "ئىنگلىز تىلى", from: "2026-10-05", to: "2027-01-17", flexible: true },
-  { id: "l47", personId: "mahmud", day: 3, start: "16:00", end: "18:00", subject: "ئىنگلىز تىلى", from: "2026-10-05", to: "2027-01-17", flexible: true },
+  { id: "l45", personId: "mahmud", day: 1, start: "14:00", end: "18:00", subject: "ئىنگلىز تىلى", from: "2026-10-05", to: "2027-01-17", flexible: true },
+  { id: "l46", personId: "mahmud", day: 2, start: "14:00", end: "18:00", subject: "ئىنگلىز تىلى", from: "2026-10-05", to: "2027-01-17", flexible: true },
+  { id: "l47", personId: "mahmud", day: 3, start: "14:00", end: "18:00", subject: "ئىنگلىز تىلى", from: "2026-10-05", to: "2027-01-17", flexible: true },
   { id: "l48", personId: "mahmud", day: 4, start: "18:00", end: "21:00", subject: "ئىنگلىز تىلى", from: "2026-10-15", to: "2027-01-17", flexible: true },
-  { id: "l49", personId: "mahmud", day: 5, start: "16:00", end: "18:00", subject: "ئىنگلىز تىلى", from: "2026-10-05", to: "2027-01-17", flexible: true },
+  { id: "l49", personId: "mahmud", day: 5, start: "14:00", end: "18:00", subject: "ئىنگلىز تىلى", from: "2026-10-05", to: "2027-01-17", flexible: true },
   { id: "l50", personId: "mahmud", day: 6, start: "16:00", end: "18:00", subject: "ئىنگلىز تىلى", from: "2026-10-05", to: "2027-01-17", flexible: true },
+  { id: "l51", personId: "teacher", day: 2, start: "08:30", end: "11:29", subject: "Generat. of Electrical Energy", from: "2026-10-05", to: "2027-01-17", note: "ELK 421E · Ayazağa, EEB · 5307" },
+  { id: "l52", personId: "teacher", day: 2, start: "12:30", end: "15:29", subject: "Illumination Techniques", from: "2026-10-05", to: "2027-01-17", note: "ELK 307E · Ayazağa, EEB · 5203" },
+  { id: "l53", personId: "teacher", day: 3, start: "08:30", end: "11:29", subject: "Electromech. Energy Conversion", from: "2026-10-05", to: "2027-01-17", note: "ELK 343E · Ayazağa, EEB · 2102" },
+  { id: "l54", personId: "teacher", day: 3, start: "12:30", end: "15:29", subject: "Power Electronic Circuits", from: "2026-10-05", to: "2027-01-17", note: "ELK 331E · Ayazağa, EEB · 5105" },
+  { id: "l55", personId: "teacher", day: 4, start: "12:30", end: "15:29", subject: "Circuit and System Analysis", from: "2026-10-05", to: "2027-01-17", note: "EEF 232E · Ayazağa, EEB · 5202" },
+  { id: "l56", personId: "teacher", day: 5, start: "14:00", end: "16:59", subject: "Artificial Neural Networks", from: "2026-10-05", to: "2027-01-17", note: "EHB 420E · Ayazağa, MDB · A14" },
 ]

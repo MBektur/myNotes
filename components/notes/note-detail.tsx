@@ -1,12 +1,11 @@
 "use client"
 
 import * as React from "react"
-import { createPortal } from "react-dom"
 import { Activity, AlignLeft, CalendarDays, CheckSquare, Flag, Hash, ExternalLink, FileText, Folder, ImageIcon, Link2, Pencil, X } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { SidePanel } from "@/components/ui/side-panel"
 import { cn } from "@/lib/utils"
 import { t } from "@/lib/i18n"
 import { useBlobUrl } from "@/lib/blobs"
@@ -126,15 +125,12 @@ function PdfItem({ a }: { a: Attachment }) {
   )
 }
 
-function Detail({ note, onEdit, onClose }: { note: Note; onEdit: (n: Note) => void; onClose: () => void }) {
+function Detail({ note }: { note: Note }) {
   const { toggleChecklist } = useNotes()
   const images = (note.attachments ?? []).filter((a) => a.kind === "image")
   const pdfs = (note.attachments ?? []).filter((a) => a.kind === "pdf")
   return (
-    <>
-    <div
-      className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4 text-foreground"
-    >
+    <div className="space-y-4 px-5 py-4 text-foreground">
       <dl className="space-y-3">
         <div className="grid grid-cols-2 gap-x-4 gap-y-3">
           <Row label={t.status} icon={<Activity />}>
@@ -226,225 +222,56 @@ function Detail({ note, onEdit, onClose }: { note: Note; onEdit: (n: Note) => vo
       )}
 
     </div>
-    <div className="flex shrink-0 justify-end gap-2 rounded-b-xl border-t bg-muted/60 px-4 py-3">
-      <Button type="button" variant="outline" size="sm" onClick={() => onEdit(note)}>
-        <Pencil /> {t.actions.edit}
-      </Button>
-      <Button type="button" variant="outline" size="sm" onClick={onClose}>
-        <X /> {t.detail.close}
-      </Button>
-    </div>
-    </>
   )
 }
 
-export type Origin = { left: number; top: number; width: number; height: number }
-
-const played = new WeakSet<Element>()
-
-/** Kart bilen modalni baghlighan egri sizdiq (modalning arqisida, backdrop'ning üstide). */
-function Connector({
-  origin,
-  offset,
-  popup,
-}: {
-  origin: Origin
-  offset: { x: number; y: number }
-  popup: HTMLElement | null
-}) {
-  const [size, setSize] = React.useState({ w: 0, h: 0 })
-  React.useEffect(() => {
-    const update = () => setSize({ w: window.innerWidth, h: window.innerHeight })
-    update()
-    window.addEventListener("resize", update)
-    return () => window.removeEventListener("resize", update)
-  }, [])
-
-  // Modalning ölchimi (offsetWidth transform'ni hésaplimaydu, shunga animatsiye waqtida toghra).
-  const [box, setBox] = React.useState({ w: 0, h: 0 })
-  React.useEffect(() => {
-    if (!popup) return
-    const update = () => setBox({ w: popup.offsetWidth, h: popup.offsetHeight })
-    update()
-    const ro = new ResizeObserver(update)
-    ro.observe(popup)
-    return () => ro.disconnect()
-  }, [popup])
-
-  const ready = size.w > 0 && box.w > 0
-  const sx = origin.left + origin.width / 2
-  const sy = origin.top + origin.height / 2
-  // Egri modalning merkizige emes, kartqa qarighan *chétige* ulinidu: modal yötkelgende chét bilen birge qozghilidu.
-  const mx = size.w / 2 + offset.x
-  const my = size.h / 2 + offset.y
-  const left = mx - box.w / 2
-  const right = mx + box.w / 2
-  const top = my - box.h / 2
-  const bottom = my + box.h / 2
-  const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v))
-  const horizontal = Math.abs(mx - sx) >= Math.abs(my - sy)
-  let d: string
-  if (horizontal) {
-    const ex = sx < mx ? left : right
-    const ey = clamp(sy, top + 28, bottom - 28)
-    d = `M ${sx} ${sy} C ${(sx + ex) / 2} ${sy}, ${(sx + ex) / 2} ${ey}, ${ex} ${ey}`
-  } else {
-    const ey = sy < my ? top : bottom
-    const ex = clamp(sx, left + 28, right - 28)
-    d = `M ${sx} ${sy} C ${sx} ${(sy + ey) / 2}, ${ex} ${(sy + ey) / 2}, ${ex} ${ey}`
-  }
-
-  if (!ready) return null
-  return createPortal(
-    <svg
-      aria-hidden
-      className={cn("pointer-events-none fixed inset-0 z-[51] size-full")}
-    >
-      {/* Siziqning sirtqi hashiyesi (stroke) */}
-      <path
-        d={d}
-        fill="none"
-        stroke="white"
-        strokeWidth={10}
-        strokeLinecap="round"
-      />
-      <path
-        d={d}
-        fill="none"
-        stroke="black"
-        strokeWidth={5}
-        strokeLinecap="round"
-      />
-      <circle cx={sx} cy={sy} r={8} fill="black" stroke="white" strokeWidth={3} />
-    </svg>,
-    document.body
-  )
-}
-
-/** Modal tiklanghan kartning ornidin chongiyip chiqqandek animatsiye (FLIP, bir tereplik scale: yazilar sozulmaydu). */
-function playFromOrigin(el: HTMLElement, o: Origin) {
-  if (played.has(el)) return
-  played.add(el)
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
-  const r = el.getBoundingClientRect()
-  if (!r.width || !r.height) return
-  const dx = o.left + o.width / 2 - (r.left + r.width / 2)
-  const dy = o.top + o.height / 2 - (r.top + r.height / 2)
-  const scale = Math.min(1, Math.max(0.2, Math.min(o.width / r.width, o.height / r.height)))
-  el.animate(
-    [
-      { transform: `translate(${dx}px, ${dy}px) scale(${scale})`, opacity: 0.3 },
-      { transform: "translate(0, 0) scale(1)", opacity: 1 },
-    ],
-    { duration: 340, easing: "cubic-bezier(0.22, 1, 0.36, 1)" }
-  )
-}
-
-export function NoteDetailDialog({
+export function NoteDetailPanel({
   note,
-  origin,
   onClose,
   onEdit,
 }: {
   note: Note | null
-  origin: Origin | null
   onClose: () => void
   onEdit: (n: Note) => void
 }) {
   // Canlı xatirini al (checklist özgirishi qatarliq yéngilinishlar üchün).
   const { notes } = useNotes()
   const live = note ? notes.find((n) => n.id === note.id) ?? null : null
-  const popupEl = React.useRef<HTMLDivElement | null>(null)
-  const [popupNode, setPopupNode] = React.useState<HTMLDivElement | null>(null)
-  const popupRef = React.useCallback(
-    (el: HTMLDivElement | null) => {
-      popupEl.current = el
-      setPopupNode(el)
-      if (el && origin) playFromOrigin(el, origin)
-    },
-    [origin]
-  )
+  // Panel yépilish animatsiyesi waqtida mezmun birdinla yoqap ketmisun
+  const [kept, setKept] = React.useState<Note | null>(live)
+  if (live && live !== kept) setKept(live)
+  const shown = live ?? kept
 
-  // Header'dan sörep modalni yötkesh (peqet chong ekranda).
-  const [pos, setPos] = React.useState({ x: 0, y: 0 })
-  const drag = React.useRef<{ sx: number; sy: number; ox: number; oy: number; rect: DOMRect } | null>(null)
-
-  function onDragStart(e: React.PointerEvent<HTMLElement>) {
-    const el = popupEl.current
-    if (!el || e.button !== 0 || (e.target as Element).closest("button")) return
-    if (!window.matchMedia("(min-width: 640px)").matches) return
-    e.currentTarget.setPointerCapture(e.pointerId)
-    drag.current = { sx: e.clientX, sy: e.clientY, ox: pos.x, oy: pos.y, rect: el.getBoundingClientRect() }
-  }
-  function onDragMove(e: React.PointerEvent<HTMLElement>) {
-    const d = drag.current
-    if (!d) return
-    // Tuggha basilmighan bolsa (pointerup yoqap ketken: ctrl+click, pencherdin chiqip qoyuwétish...) sörepni toxtat.
-    if (!(e.buttons & 1)) {
-      drag.current = null
-      return
-    }
-    // Modal ekrandin chiqip ketmisun: header herqachan körünüp turidu.
-    const minDx = 80 - d.rect.right
-    const maxDx = window.innerWidth - 80 - d.rect.left
-    const minDy = -d.rect.top
-    const maxDy = window.innerHeight - 56 - d.rect.top
-    setPos({
-      x: d.ox + Math.min(maxDx, Math.max(minDx, e.clientX - d.sx)),
-      y: d.oy + Math.min(maxDy, Math.max(minDy, e.clientY - d.sy)),
-    })
-  }
-  function onDragEnd() {
-    drag.current = null
-  }
   return (
-    <Dialog
+    <SidePanel
       open={!!live}
       onOpenChange={(o) => !o && onClose()}
-      onOpenChangeComplete={(o) => {
-        if (!o) setPos({ x: 0, y: 0 })
-      }}
+      title={
+        shown ? (
+          <span className="flex items-center gap-2">
+            <span
+              aria-hidden
+              title={noteColor(shown)}
+              className={cn(`note-${noteColor(shown)} note-surface size-4 shrink-0 rounded-full border border-foreground/20 shadow-sm`)}
+            />
+            {shown.title || (shown.content ? "" : t.untitled)}
+          </span>
+        ) : null
+      }
+      footer={
+        shown && (
+          <>
+            <Button type="button" variant="outline" size="sm" onClick={() => onEdit(shown)}>
+              <Pencil /> {t.actions.edit}
+            </Button>
+            <Button type="button" variant="outline" size="sm" onClick={onClose}>
+              <X /> {t.detail.close}
+            </Button>
+          </>
+        )
+      }
     >
-      {live && origin && <Connector origin={origin} offset={pos} popup={popupNode} />}
-      <DialogContent
-        ref={popupRef}
-        style={{
-          ...(origin ? { animation: "none" } : null),
-          ...(pos.x || pos.y ? { transform: `translate(${pos.x}px, ${pos.y}px)` } : null),
-        }}
-        dir="rtl"
-        showCloseButton={false}
-        className={cn(
-          "z-[52] flex max-h-[100dvh] flex-col gap-0 p-0 max-sm:top-0 max-sm:left-0 max-sm:h-[100dvh] max-sm:max-w-none max-sm:translate-x-0 max-sm:translate-y-0 max-sm:rounded-none sm:max-h-[90vh] sm:max-w-xl"
-        )}
-      >
-        <DialogHeader
-          onPointerDown={onDragStart}
-          onPointerMove={onDragMove}
-          onPointerUp={onDragEnd}
-          onPointerCancel={onDragEnd}
-          onLostPointerCapture={onDragEnd}
-          onContextMenu={onDragEnd}
-          className="shrink-0 touch-none rounded-t-xl bg-muted/60 flex-row items-center justify-between gap-2 border-b px-4 py-3 select-none sm:cursor-grab sm:active:cursor-grabbing"
-        >
-          <div className="flex min-w-0 items-center gap-2">
-            {live && (
-              <span
-                aria-hidden
-                title={noteColor(live)}
-                className={cn(`note-${noteColor(live)} note-surface size-4 shrink-0 rounded-full border border-foreground/20 shadow-sm`)}
-              />
-            )}
-            <DialogTitle className="text-base break-words">
-              {live?.title || (live?.content ? "" : t.untitled)}
-            </DialogTitle>
-          </div>
-          <Button type="button" variant="ghost" size="icon-sm" onClick={onClose} aria-label={t.detail.close}>
-            <X />
-          </Button>
-        </DialogHeader>
-        {live && <Detail note={live} onEdit={onEdit} onClose={onClose} />}
-      </DialogContent>
-    </Dialog>
+      {shown && <Detail note={shown} />}
+    </SidePanel>
   )
 }

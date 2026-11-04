@@ -2,12 +2,15 @@
 
 import * as React from "react"
 import { addDays, addWeeks, format, startOfWeek } from "date-fns"
-import { ChevronLeft, ChevronRight, X } from "lucide-react"
+import { CalendarDays, Car, ChevronLeft, ChevronRight, GraduationCap } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Hint } from "@/components/ui/hint"
 import { t } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 import { SCHEDULE_END_HOUR, SCHEDULE_START_HOUR } from "@/lib/schedule-data"
+import { SchedulePanel } from "./schedule-panel"
+import { ScheduleTimetable } from "./schedule-timetable"
+import { SubjectBadge } from "./subject-badge"
 import { useSchedule } from "@/lib/schedule-store"
 import { intersect, layoutLanes, lessonsOn, slotsToRanges, subjectHues, subtract, toMin, type Range } from "@/lib/schedule"
 
@@ -21,10 +24,6 @@ const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 0]
 
 const key = (d: Date) => format(d, "yyyy-MM-dd")
 const dayMonth = (d: Date) => `${d.getDate()}-${t.dashboard.months[d.getMonth()]}`
-const fmtKey = (k: string) => {
-  const [y, m, d] = k.split("-").map(Number)
-  return `${y}-${t.dashboard.months[m - 1]} ${d}`
-}
 const top = (min: number) => ((Math.max(min, START_MIN) - START_MIN) / 60) * HOUR_PX
 const height = (a: number, b: number) => ((Math.min(b, END_MIN) - Math.max(a, START_MIN)) / 60) * HOUR_PX
 
@@ -39,19 +38,6 @@ function IconTip({ label, onClick, children }: { label: string; onClick: () => v
   )
 }
 
-/** Ders ati: hue bo yiche renglik badge */
-function SubjectBadge({ subject, hue, className }: { subject: string; hue: number | undefined; className?: string }) {
-  return (
-    <span
-      dir="auto"
-      className={cn("subject-badge inline-block max-w-full truncate rounded-full px-2 py-px align-middle text-[10px] font-medium leading-snug", className)}
-      style={{ "--h": hue ?? 0 } as React.CSSProperties}
-    >
-      {subject}
-    </span>
-  )
-}
-
 export function SchedulePage() {
   const { people, lessons } = useSchedule()
   const hues = React.useMemo(() => subjectHues(lessons), [lessons])
@@ -60,6 +46,7 @@ export function SchedulePage() {
   // selected: "yoshurulghan" kishiler; shuning bilen yéngi kirgüzülgen kishiler aptomatik körünidu
   const [hidden, setHidden] = React.useState<Set<string>>(() => new Set())
   const selected = React.useMemo(() => new Set(people.filter((p) => !hidden.has(p.id)).map((p) => p.id)), [people, hidden])
+  const [view, setView] = React.useState<"week" | "timetable">("week")
   const [weekOffset, setWeekOffset] = React.useState(0)
   const [mobileDay, setMobileDay] = React.useState<number | null>(null)
   const [detailRef, setDetail] = React.useState<{ id: string; date: string } | null>(null)
@@ -182,7 +169,32 @@ export function SchedulePage() {
             {t.schedule.thisWeek}
           </Button>
         )}
+        <div className="clay flex shrink-0 gap-1 rounded-2xl p-1">
+          {([
+            ["week", t.schedule.viewWeek, <CalendarDays key="w" />],
+            ["timetable", t.schedule.viewTimetable, <GraduationCap key="t" />],
+          ] as const).map(([v, label, icon]) => (
+            <Hint key={v} label={label}>
+              <Button
+                variant={view === v ? "default" : "ghost"}
+                size="sm"
+                className="h-8 gap-1.5 rounded-xl px-2.5"
+                aria-label={label}
+                aria-pressed={view === v}
+                onClick={() => setView(v)}
+              >
+                {icon}
+                <span className="hidden sm:inline">{label}</span>
+              </Button>
+            </Hint>
+          ))}
+        </div>
       </div>
+      {view === "timetable" && (
+        <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <Car className="size-3.5 shrink-0" /> {t.schedule.travelNote}
+        </p>
+      )}
 
       {/* ---------- Mobil: kün tallash ---------- */}
       <div className="flex gap-1.5 md:hidden" role="tablist">
@@ -204,9 +216,19 @@ export function SchedulePage() {
         ))}
       </div>
 
-      {/* ---------- Jeduel ---------- */}
+      {/* ---------- schedule ---------- */}
       {chosen.length === 0 ? (
         <div className="clay p-8 text-center text-muted-foreground">{t.schedule.noPeople}</div>
+      ) : view === "timetable" ? (
+        <ScheduleTimetable
+          days={dayData}
+          byId={byId}
+          hues={hues}
+          todayKey={todayKey}
+          activeMobile={activeMobile}
+          selectedKey={detailRef ? `${detailRef.id}|${detailRef.date}` : null}
+          onSelect={(id, date) => setDetail({ id, date })}
+        />
       ) : (
         <div className="clay flex overflow-hidden p-2 sm:p-3">
           {/* Waqit ustuni */}
@@ -270,7 +292,7 @@ export function SchedulePage() {
                           key={l.id}
                           type="button"
                           onClick={() => setDetail({ id: l.id, date: d.k })}
-                          title={`${p.name} · ${l.subject} · ${l.start}–${l.end}${l.flexible ? ` · ${t.schedule.flexible}` : ""}`}
+                          title={`${p.name} · ${l.subject} · ${l.start}–${l.end}${l.flexible ? ` · ${t.schedule.flexible}` : ""}${l.note ? ` · ${l.note}` : ""}`}
                           className={cn(
                             `note-${p.color} note-surface absolute overflow-hidden rounded-lg px-1.5 py-1 text-start text-[11px] leading-tight shadow-sm transition hover:z-10 hover:shadow-md`,
                             l.flexible ? "border-2 border-dashed opacity-90" : "border-s-4",
@@ -308,40 +330,14 @@ export function SchedulePage() {
         </div>
       )}
 
-      {/* ---------- Ders tepsilati ---------- */}
-      {detail && (
-        <section className={cn(`note-${byId[detail.lesson.personId].color} note-surface relative flex flex-col gap-1.5 rounded-3xl p-4 shadow-sm`)}>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute end-2 top-2 size-8 rounded-full"
-            aria-label={t.schedule.clear}
-            onClick={() => setDetail(null)}
-          >
-            <X />
-          </Button>
-          <h3 className="text-xl">
-            {byId[detail.lesson.personId].name}{" "}
-            <SubjectBadge subject={detail.lesson.subject} hue={hues.get(detail.lesson.subject)} className="text-sm" />
-          </h3>
-          <p className="text-sm tabular-nums">
-            {t.calendar.weekdays[detail.lesson.day]} · {detail.lesson.flexible && "~ "}{detail.lesson.start}–{detail.lesson.end}
-          </p>
-          {detail.lesson.flexible && (
-            <p className="text-sm">
-              <span className="rounded-md bg-foreground/80 px-1.5 py-px text-xs text-background">~ {t.schedule.flexibleTag}</span>{" "}
-              {t.schedule.flexibleHint}
-            </p>
-          )}
-          <p className="text-sm">
-            {t.schedule.period}: {fmtKey(detail.lesson.from)} → {fmtKey(detail.lesson.to)}
-          </p>
-          <p className="text-sm">
-            {t.schedule.excluded}:{" "}
-            {detail.lesson.exclude?.length ? detail.lesson.exclude.map(fmtKey).join("، ") : t.schedule.none}
-          </p>
-        </section>
-      )}
+      <SchedulePanel
+        selection={detailRef}
+        lessons={lessons}
+        byId={byId}
+        hues={hues}
+        onSelect={(id, date) => setDetail({ id, date })}
+        onClose={() => setDetail(null)}
+      />
     </div>
   )
 }

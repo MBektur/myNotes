@@ -27,7 +27,7 @@ import { CommandSearch } from "./command-search"
 import { useImportExport } from "./import-export"
 import { useScheduleIo } from "./schedule-io"
 import { MobileBottomNav } from "./mobile-bottom-nav"
-import { NoteDetailDialog, type Origin } from "./note-detail"
+import { NoteDetailPanel } from "./note-detail"
 import { NoteDialog, type DialogTarget } from "./note-dialog"
 
 type Shell = {
@@ -39,7 +39,7 @@ type Shell = {
   setView: (v: ViewMode) => void
   visible: Note[]
   edit: (n: Note) => void
-  open: (n: Note, from?: Element | null) => void
+  open: (n: Note) => void
   add: (status?: Status, deadline?: string) => void
   askDelete: (n: Note) => void
   loadDemo: () => void
@@ -65,7 +65,6 @@ function Inner({ children }: { children: React.ReactNode }) {
   const view: ViewMode = viewOverride ?? (hydrated ? loadView() : "kanban")
   const [target, setTarget] = React.useState<DialogTarget>(null)
   const [detail, setDetail] = React.useState<Note | null>(null)
-  const [detailOrigin, setDetailOrigin] = React.useState<Origin | null>(null)
   const [toDelete, setToDelete] = React.useState<Note | null>(null)
   const [cmdOpen, setCmdOpen] = React.useState(false)
 
@@ -82,12 +81,7 @@ function Inner({ children }: { children: React.ReactNode }) {
     toast.success(t.dashboard.demoLoaded)
   }
   const edit = (n: Note) => setTarget({ note: n })
-  const open = (n: Note, from?: Element | null) => {
-    const el = from?.closest("[data-note-card]") ?? from
-    const r = el?.getBoundingClientRect()
-    setDetailOrigin(r ? { left: r.left, top: r.top, width: r.width, height: r.height } : null)
-    setDetail(n)
-  }
+  const open = (n: Note) => setDetail(n)
   const add = (status?: Status, deadline?: string) => setTarget({ status, deadline })
   const onNotesPage = pathname.startsWith("/notes")
   const onAbout = pathname.startsWith("/about")
@@ -134,9 +128,8 @@ function Inner({ children }: { children: React.ReactNode }) {
         </SidebarInset>
         <MobileBottomNav onNew={() => add()} />
 
-        <NoteDetailDialog
+        <NoteDetailPanel
           note={detail}
-          origin={detailOrigin}
           onClose={() => setDetail(null)}
           onEdit={(n) => {
             setDetail(null)

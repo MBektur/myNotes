@@ -6,7 +6,7 @@ import { t } from "@/lib/i18n"
 import { exportScheduleCsv, parseScheduleCsv } from "@/lib/schedule-csv"
 import { resetSchedule, saveSchedule, useSchedule } from "@/lib/schedule-store"
 
-/** Jeduel CSV import/export/reset: yenggi yan panelda (sidebar) /schedule sehipiside ishlitilidu */
+/** schedule CSV import/export/reset: yenggi yan panelda (sidebar) /schedule sehipiside ishlitilidu */
 export function useScheduleIo() {
   const data = useSchedule()
   const inputRef = React.useRef<HTMLInputElement>(null)

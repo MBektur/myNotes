@@ -5,6 +5,9 @@ export const toMin = (hhmm: string) => {
   return h * 60 + m
 }
 
+export const fromMin = (m: number) =>
+  `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`
+
 export type Range = [number, number]
 
 const merge = (rs: Range[]): Range[] => {
