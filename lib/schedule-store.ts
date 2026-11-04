@@ -47,3 +47,28 @@ const subscribe = (cb: () => void) => {
 export function useSchedule(): ScheduleData {
   return React.useSyncExternalStore(subscribe, read, () => DEFAULT)
 }
+
+/* ---------- Sehipidiki süzgüch / körünüsh (brauzérda saqlinidu) ---------- */
+
+export type ScheduleView = "week" | "timetable"
+export type ScheduleUi = { hidden: string[]; view: ScheduleView }
+
+const UI_KEY = "mynotes.schedule.ui.v1"
+
+export function loadScheduleUi(): ScheduleUi {
+  try {
+    const raw = localStorage.getItem(UI_KEY)
+    if (raw) {
+      const d = JSON.parse(raw) as Partial<ScheduleUi>
+      return {
+        hidden: Array.isArray(d.hidden) ? d.hidden.filter((x): x is string => typeof x === "string") : [],
+        view: d.view === "timetable" ? "timetable" : "week",
+      }
+    }
+  } catch {}
+  return { hidden: [], view: "week" }
+}
+
+export function saveScheduleUi(ui: ScheduleUi) {
+  try { localStorage.setItem(UI_KEY, JSON.stringify(ui)) } catch {}
+}

@@ -11,7 +11,7 @@ import { SCHEDULE_END_HOUR, SCHEDULE_START_HOUR } from "@/lib/schedule-data"
 import { SchedulePanel } from "./schedule-panel"
 import { ScheduleTimetable } from "./schedule-timetable"
 import { SubjectBadge } from "./subject-badge"
-import { useSchedule } from "@/lib/schedule-store"
+import { loadScheduleUi, saveScheduleUi, useSchedule, type ScheduleView } from "@/lib/schedule-store"
 import { intersect, layoutLanes, lessonsOn, slotsToRanges, subjectHues, subtract, toMin, type Range } from "@/lib/schedule"
 
 const HOUR_PX = 56
@@ -44,9 +44,14 @@ export function SchedulePage() {
   const hasAvail = people.some((p) => Object.values(p.avail).some((v) => v?.length))
   const byId = React.useMemo(() => Object.fromEntries(people.map((p) => [p.id, p])), [people])
   // selected: "yoshurulghan" kishiler; shuning bilen yéngi kirgüzülgen kishiler aptomatik körünidu
-  const [hidden, setHidden] = React.useState<Set<string>>(() => new Set())
+  // Süzgüch (yoshurulghan kishiler) we körünüsh brauzérda saqlinidu; sehipe AuthGate arqisida, peqet istemci tarapta ishleydu
+  const [saved] = React.useState(loadScheduleUi)
+  const [hidden, setHidden] = React.useState<Set<string>>(() => new Set(saved.hidden))
   const selected = React.useMemo(() => new Set(people.filter((p) => !hidden.has(p.id)).map((p) => p.id)), [people, hidden])
-  const [view, setView] = React.useState<"week" | "timetable">("week")
+  const [view, setView] = React.useState<ScheduleView>(saved.view)
+  React.useEffect(() => {
+    saveScheduleUi({ hidden: [...hidden], view })
+  }, [hidden, view])
   const [weekOffset, setWeekOffset] = React.useState(0)
   const [mobileDay, setMobileDay] = React.useState<number | null>(null)
   const [detailRef, setDetail] = React.useState<{ id: string; date: string } | null>(null)
