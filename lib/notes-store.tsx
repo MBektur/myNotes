@@ -1,7 +1,9 @@
 "use client"
 
 import * as React from "react"
-import { loadNotes, saveNotes } from "./storage"
+import { deleteBlobs } from "./blobs"
+import { demoNotes } from "./demo"
+import { hasStoredData, loadNotes, saveNotes } from "./storage"
 import { newId, type Note, type Status } from "./types"
 import { ug } from "./ug"
 
@@ -102,7 +104,8 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
   })
 
   React.useEffect(() => {
-    dispatch({ type: "hydrate", notes: loadNotes() })
+    // İlk ziyaret (kayıt yok): demo xatirilerni aptomatik yüklew.
+    dispatch({ type: "hydrate", notes: hasStoredData() ? loadNotes() : demoNotes() })
   }, [])
 
   React.useEffect(() => {
@@ -129,7 +132,10 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
         return note
       },
       update: (id, patch) => dispatch({ type: "update", id, patch: normalizeNote(patch) }),
-      remove: (id) => dispatch({ type: "remove", id }),
+      remove: (id) => {
+        deleteBlobs(notes.find((n) => n.id === id)?.attachments?.map((a) => a.id) ?? [])
+        dispatch({ type: "remove", id })
+      },
       move: (id, status) => dispatch({ type: "move", id, status }),
       toggleChecklist: (id, itemId) =>
         dispatch({ type: "toggleChecklist", id, itemId }),

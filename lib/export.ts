@@ -20,6 +20,17 @@ const noteSchema = z.object({
   checklist: z
     .array(z.object({ id: z.string(), text: z.string(), done: z.boolean() }))
     .default([]),
+  attachments: z
+    .array(
+      z.object({
+        id: z.string(),
+        kind: z.enum(["image", "pdf"]),
+        name: z.string(),
+        size: z.number(),
+        type: z.string(),
+      })
+    )
+    .optional(),
   color: z.enum(NOTE_COLORS).optional(),
 })
 

@@ -1,6 +1,7 @@
 "use client"
 
-import { CalendarDays, Link2, MoreVertical, Pencil, Trash2, ArrowRightLeft } from "lucide-react"
+import * as React from "react"
+import { CalendarDays, Eye, Link2, Paperclip, MoreVertical, Pencil, Trash2, ArrowRightLeft } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
@@ -16,8 +17,9 @@ import {
 import { cn } from "@/lib/utils"
 import { t } from "@/lib/i18n"
 import { isOverdue, progressOf } from "@/lib/filters"
+import { useShell } from "./app-shell"
 import { useNotes } from "@/lib/notes-store"
-import { NOTE_COLORS, STATUSES, noteColor, type Note } from "@/lib/types"
+import { NOTE_COLORS, PRIORITY_VISUAL, STATUSES, noteColor, type Note } from "@/lib/types"
 
 export const priorityStyle: Record<string, string> = {
   low: "bg-slate-500/15 text-slate-700 dark:text-slate-300",
@@ -36,6 +38,7 @@ export function NoteMenu({
   onDelete: (n: Note) => void
 }) {
   const { move } = useNotes()
+  const { open } = useShell()
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -44,6 +47,9 @@ export function NoteMenu({
         <MoreVertical />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-44">
+        <DropdownMenuItem onClick={() => open(note)}>
+          <Eye /> {t.actions.view}
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={() => onEdit(note)}>
           <Pencil /> {t.actions.edit}
         </DropdownMenuItem>
@@ -71,6 +77,22 @@ export function NoteMenu({
   )
 }
 
+/** Element ichidiki metin line-clamp bilen késilgenmu-yoq tekshüridu. */
+function useClamped<T extends HTMLElement>(dep: unknown) {
+  const ref = React.useRef<T>(null)
+  const [clamped, setClamped] = React.useState(false)
+  React.useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const check = () => setClamped(el.scrollHeight > el.clientHeight + 1)
+    check()
+    const ro = new ResizeObserver(check)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [dep])
+  return [ref, clamped] as const
+}
+
 export function NoteCard({
   note,
   onEdit,
@@ -83,6 +105,9 @@ export function NoteCard({
   className?: string
 }) {
   const { toggleChecklist, update } = useNotes()
+  const { open } = useShell()
+  const [titleRef, titleClamped] = useClamped<HTMLHeadingElement>(note.title)
+  const [bodyRef, bodyClamped] = useClamped<HTMLParagraphElement>(note.content)
   const current = noteColor(note)
   const progress = progressOf(note)
   const overdue = isOverdue(note)
@@ -90,7 +115,7 @@ export function NoteCard({
   return (
     <div
       className={cn(
-        `note-${noteColor(note)} note-surface rounded-3xl p-4 text-foreground shadow-[0_8px_20px_-8px_oklch(0.5_0.06_290/0.25),inset_0_2px_3px_oklch(1_0_0/0.7)]`,
+        `note-${noteColor(note)} note-surface flex flex-col rounded-3xl p-4 text-foreground shadow-[0_8px_20px_-8px_oklch(0.5_0.06_290/0.25),inset_0_2px_3px_oklch(1_0_0/0.7)]`,
         className
       )}
     >
@@ -115,17 +140,26 @@ export function NoteCard({
       <button
         type="button"
         className="mt-2 block w-full text-start"
-        onClick={() => onEdit(note)}
+        onClick={() => open(note)}
       >
-        <h3 className="font-medium leading-snug break-words">
+        <h3 ref={titleRef} className="line-clamp-2 font-medium leading-snug break-words">
           {note.title || (note.content ? "" : t.untitled)}
         </h3>
         {note.content && (
-          <p className="mt-1 line-clamp-3 text-sm whitespace-pre-line text-foreground/70">
+          <p ref={bodyRef} className="mt-1 line-clamp-3 text-sm break-words whitespace-pre-line text-foreground/70">
             {note.content}
           </p>
         )}
       </button>
+      {(titleClamped || bodyClamped) && (
+        <button
+          type="button"
+          onClick={() => open(note)}
+          className="mt-1 text-xs font-medium text-foreground/70 underline-offset-2 hover:underline"
+        >
+          {t.actions.readMore}
+        </button>
+      )}
 
       {note.checklist.length > 0 && (
         <ul className="mt-3 space-y-1.5" onPointerDown={(e) => e.stopPropagation()}>
@@ -136,7 +170,7 @@ export function NoteCard({
                 checked={c.done}
                 onCheckedChange={() => toggleChecklist(note.id, c.id)}
               />
-              <span className={cn(c.done && "text-foreground/50 line-through")}>{c.text}</span>
+              <span className={cn("line-clamp-1 min-w-0 break-words", c.done && "text-foreground/50 line-through")}>{c.text}</span>
             </li>
           ))}
           {note.checklist.length > 5 && (
@@ -162,10 +196,12 @@ export function NoteCard({
         </div>
       )}
 
-      {(note.priority || note.deadline || note.links.length > 0) && (
+      <div className="mt-auto">
+      {(note.priority || note.deadline || note.links.length > 0 || !!note.attachments?.length) && (
         <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
           {note.priority && (
-            <span className={cn("rounded-full px-2 py-0.5 font-medium", priorityStyle[note.priority])}>
+            <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-medium", priorityStyle[note.priority])}>
+              <span aria-hidden>{PRIORITY_VISUAL[note.priority].icon}</span>
               {t.priorities[note.priority]}
             </span>
           )}
@@ -182,6 +218,11 @@ export function NoteCard({
           {note.links.length > 0 && (
             <span className="inline-flex items-center gap-1 text-foreground/70">
               <Link2 className="size-3.5" /> {note.links.length}
+            </span>
+          )}
+          {!!note.attachments?.length && (
+            <span className="inline-flex items-center gap-1 text-foreground/70">
+              <Paperclip className="size-3.5" /> {note.attachments.length}
             </span>
           )}
         </div>
@@ -208,6 +249,16 @@ export function NoteCard({
             )}
           />
         ))}
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="ms-auto h-6 gap-1 px-2 text-xs"
+          onClick={() => open(note)}
+        >
+          <Eye className="size-3.5" /> {t.actions.view}
+        </Button>
+      </div>
       </div>
     </div>
   )

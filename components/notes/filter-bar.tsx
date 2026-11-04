@@ -17,18 +17,13 @@ import {
   STATUSES,
   STATUS_VISUAL,
   colorForCategory,
+  PRIORITY_VISUAL,
   type Note,
   type NoteColor,
   type Priority,
   type Status,
 } from "@/lib/types"
 
-const PRIORITY_VISUAL: Record<Priority, { icon: string; color: NoteColor }> = {
-  low: { icon: "🌱", color: "teal" },
-  medium: { icon: "⚡", color: "blue" },
-  high: { icon: "🔥", color: "orange" },
-  urgent: { icon: "🚨", color: "pink" },
-}
 const DEADLINE_VISUAL: Record<string, { icon: string; color: NoteColor }> = {
   overdue: { icon: "⏰", color: "pink" },
   week: { icon: "📅", color: "orange" },
@@ -149,7 +144,7 @@ export function FilterBar({
           label={t.sortBy}
           value={sortBy}
           withAll={false}
-          onChange={(v) => setSortBy((v ?? "updated") as SortBy)}
+          onChange={(v) => setSortBy((v ?? "priority") as SortBy)}
           options={Object.entries(t.sort).map(([value, label]) => ({ value, label, icon: SORT_ICON[value] }))}
         />
       </div>

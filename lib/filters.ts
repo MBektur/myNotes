@@ -73,10 +73,12 @@ export function sortNotes(notes: Note[], by: SortBy) {
         (a.deadline ?? "9999").localeCompare(b.deadline ?? "9999")
       )
     case "priority":
+      // Ohshash muhimliqta ماۋزۇ bo'yiche tertiplenidu.
       return arr.sort(
         (a, b) =>
           (b.priority ? PRIORITIES.indexOf(b.priority) : -1) -
-          (a.priority ? PRIORITIES.indexOf(a.priority) : -1)
+            (a.priority ? PRIORITIES.indexOf(a.priority) : -1) ||
+          (a.title ?? "").localeCompare(b.title ?? "")
       )
     case "title":
       return arr.sort((a, b) => (a.title ?? "").localeCompare(b.title ?? ""))

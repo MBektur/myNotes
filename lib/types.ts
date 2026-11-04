@@ -21,7 +21,21 @@ export const STATUS_VISUAL: Record<Status, { icon: string; color: NoteColor }> =
   done: { icon: "✅", color: "green" },
 }
 
+export const PRIORITY_VISUAL: Record<Priority, { icon: string; color: NoteColor }> = {
+  low: { icon: "🌱", color: "teal" },
+  medium: { icon: "⚡", color: "blue" },
+  high: { icon: "🔥", color: "orange" },
+  urgent: { icon: "🚨", color: "pink" },
+}
+
 export type NoteLink = { id: string; url: string; label?: string }
+export type Attachment = {
+  id: string
+  kind: "image" | "pdf"
+  name: string
+  size: number
+  type: string
+}
 export type ChecklistItem = { id: string; text: string; done: boolean }
 
 export type Note = {
@@ -37,6 +51,7 @@ export type Note = {
   deadline?: string
   links: NoteLink[]
   checklist: ChecklistItem[]
+  attachments?: Attachment[]
   color?: NoteColor
 }
 
@@ -68,6 +83,7 @@ export function isNoteEmpty(n: Partial<Note>) {
     !n.priority &&
     !n.deadline &&
     !(n.links?.length) &&
-    !(n.checklist?.length)
+    !(n.checklist?.length) &&
+    !(n.attachments?.length)
   )
 }

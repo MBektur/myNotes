@@ -5,6 +5,14 @@ const VIEW_KEY = "mynotes:view"
 
 export type StoredData = { version: 1; notes: Note[] }
 
+export function hasStoredData(): boolean {
+  try {
+    return localStorage.getItem(DATA_KEY) !== null
+  } catch {
+    return true
+  }
+}
+
 export function loadNotes(): Note[] {
   try {
     const raw = localStorage.getItem(DATA_KEY)

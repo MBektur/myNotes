@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils"
 import { t } from "@/lib/i18n"
 import { isOverdue, progressOf } from "@/lib/filters"
 import { noteColor, type Note } from "@/lib/types"
+import { useShell } from "./app-shell"
 import { NoteMenu, priorityStyle } from "./note-card"
 
 export function ListView({
@@ -17,6 +18,7 @@ export function ListView({
   onEdit: (n: Note) => void
   onDelete: (n: Note) => void
 }) {
+  const { open } = useShell()
   return (
     <ul className="divide-y overflow-hidden rounded-2xl bg-card ring-1 ring-foreground/10">
       {notes.map((n) => {
@@ -28,7 +30,7 @@ export function ListView({
           >
             <button
               type="button"
-              onClick={() => onEdit(n)}
+              onClick={() => open(n)}
               className="flex min-w-0 flex-1 flex-col gap-1 text-start sm:flex-row sm:items-center sm:gap-3"
             >
               <span className="min-w-0 flex-1 truncate font-medium">
