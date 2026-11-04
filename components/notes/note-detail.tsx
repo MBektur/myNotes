@@ -6,6 +6,7 @@ import { Activity, AlignLeft, CalendarDays, CheckSquare, Flag, Hash, ExternalLin
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { SidePanel, panelBtn } from "@/components/ui/side-panel"
 import { cn } from "@/lib/utils"
 import { t } from "@/lib/i18n"
@@ -99,19 +100,61 @@ function LinkPreview({ href, label }: { href: string; label?: string }) {
   )
 }
 
+/** Resim/PDF'ni sehipidin chiqmay, modal oyna ichide körsitidu. */
+function AttachmentViewer({
+  a, url, open, onOpenChange,
+}: { a: Attachment; url: string; open: boolean; onOpenChange: (o: boolean) => void }) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent
+        showCloseButton={false}
+        className="flex h-[90vh] w-[95vw] max-w-[95vw] flex-col gap-0 overflow-hidden p-0 sm:max-w-5xl"
+      >
+        <header className="flex shrink-0 items-center gap-2 border-b px-3 py-2">
+          <DialogTitle dir="ltr" className="min-w-0 flex-1 truncate text-start text-sm font-medium">{a.name}</DialogTitle>
+          <a
+            href={url}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex h-8 items-center gap-1 rounded-lg border px-3 text-sm font-medium hover:bg-muted"
+          >
+            <ExternalLink className="size-3.5" /> {t.detail.openFile}
+          </a>
+          <DialogClose render={<Button variant="ghost" size="icon" className="rounded-full" aria-label={t.detail.close} />}>
+            <X />
+          </DialogClose>
+        </header>
+        <div className="min-h-0 flex-1 bg-muted/40">
+          {a.kind === "image" ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={url} alt={a.name} className="size-full object-contain" />
+          ) : (
+            <iframe src={url} title={a.name} className="size-full border-0 bg-white" />
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 function ImageItem({ a }: { a: Attachment }) {
   const url = useBlobUrl(a.id)
+  const [open, setOpen] = React.useState(false)
   if (!url) return <div className="aspect-video animate-pulse rounded-lg bg-muted" />
   return (
-    <a href={url} target="_blank" rel="noreferrer" title={a.name}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={url} alt={a.name} className="aspect-video w-full rounded-lg border object-cover" />
-    </a>
+    <>
+      <button type="button" onClick={() => setOpen(true)} title={a.name} className="block w-full cursor-zoom-in">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={url} alt={a.name} className="aspect-video w-full rounded-lg border object-cover" />
+      </button>
+      <AttachmentViewer a={a} url={url} open={open} onOpenChange={setOpen} />
+    </>
   )
 }
 
 function PdfItem({ a }: { a: Attachment }) {
   const url = useBlobUrl(a.id)
+  const [open, setOpen] = React.useState(false)
   const kb = Math.max(1, Math.round(a.size / 1024))
   return (
     <div className="flex items-center gap-2 rounded-lg border border-foreground/10 bg-white/50 p-2 dark:bg-white/10">
@@ -121,14 +164,16 @@ function PdfItem({ a }: { a: Attachment }) {
         <div className="text-[13px] text-foreground/60">{kb} KB</div>
       </div>
       {url && (
-        <a
-          href={url}
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex h-8 items-center gap-1 rounded-lg border px-3 text-sm font-medium hover:bg-muted"
-        >
-          <ExternalLink className="size-3.5" /> {t.detail.openFile}
-        </a>
+        <>
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className="inline-flex h-8 items-center gap-1 rounded-lg border px-3 text-sm font-medium hover:bg-muted"
+          >
+            <ExternalLink className="size-3.5" /> {t.detail.openFile}
+          </button>
+          <AttachmentViewer a={a} url={url} open={open} onOpenChange={setOpen} />
+        </>
       )}
     </div>
   )
