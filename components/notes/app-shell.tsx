@@ -25,8 +25,9 @@ import { AppHeader } from "./app-header"
 import { AppSidebar } from "./app-sidebar"
 import { CommandSearch } from "./command-search"
 import { useImportExport } from "./import-export"
+import { useScheduleIo } from "./schedule-io"
 import { MobileBottomNav } from "./mobile-bottom-nav"
-import { NoteDetailDialog } from "./note-detail"
+import { NoteDetailDialog, type Origin } from "./note-detail"
 import { NoteDialog, type DialogTarget } from "./note-dialog"
 
 type Shell = {
@@ -38,7 +39,7 @@ type Shell = {
   setView: (v: ViewMode) => void
   visible: Note[]
   edit: (n: Note) => void
-  open: (n: Note) => void
+  open: (n: Note, from?: Element | null) => void
   add: (status?: Status, deadline?: string) => void
   askDelete: (n: Note) => void
   loadDemo: () => void
@@ -57,12 +58,14 @@ function Inner({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const pathname = usePathname()
   const { doExport, doExportCsv, pickFile, ui: importUi } = useImportExport()
+  const scheduleIo = useScheduleIo()
   const [filters, setFilters] = React.useState<Filters>(emptyFilters)
   const [sortBy, setSortBy] = React.useState<SortBy>("priority")
   const [viewOverride, setViewState] = React.useState<ViewMode | null>(null)
   const view: ViewMode = viewOverride ?? (hydrated ? loadView() : "kanban")
   const [target, setTarget] = React.useState<DialogTarget>(null)
   const [detail, setDetail] = React.useState<Note | null>(null)
+  const [detailOrigin, setDetailOrigin] = React.useState<Origin | null>(null)
   const [toDelete, setToDelete] = React.useState<Note | null>(null)
   const [cmdOpen, setCmdOpen] = React.useState(false)
 
@@ -79,10 +82,16 @@ function Inner({ children }: { children: React.ReactNode }) {
     toast.success(t.dashboard.demoLoaded)
   }
   const edit = (n: Note) => setTarget({ note: n })
-  const open = (n: Note) => setDetail(n)
+  const open = (n: Note, from?: Element | null) => {
+    const el = from?.closest("[data-note-card]") ?? from
+    const r = el?.getBoundingClientRect()
+    setDetailOrigin(r ? { left: r.left, top: r.top, width: r.width, height: r.height } : null)
+    setDetail(n)
+  }
   const add = (status?: Status, deadline?: string) => setTarget({ status, deadline })
   const onNotesPage = pathname.startsWith("/notes")
   const onAbout = pathname.startsWith("/about")
+  const onSchedule = pathname.startsWith("/schedule")
 
   const ctx: Shell = {
     filters, setFilters, sortBy, setSortBy, view, setView, visible,
@@ -99,12 +108,13 @@ function Inner({ children }: { children: React.ReactNode }) {
           onDemo={loadDemo}
           onImport={pickFile}
           onLogout={logout}
+          schedule={pathname.startsWith("/schedule") ? scheduleIo : undefined}
         />
         <SidebarInset className="app-bg min-w-0 bg-transparent">
           <div className="flex flex-1 flex-col gap-4 p-4 pb-32 md:p-6">
             <AppHeader
-              title={onNotesPage ? t.notes : onAbout ? t.about.title : pathname.startsWith("/calendar") ? t.calendar.title : t.dashboard.greeting}
-              subtitle={onNotesPage ? undefined : onAbout ? t.about.subtitle : pathname.startsWith("/calendar") ? t.calendar.subtitle : t.dashboard.subtitle}
+              title={onNotesPage ? t.notes : onSchedule ? t.schedule.title : onAbout ? t.about.title : pathname.startsWith("/calendar") ? t.calendar.title : t.dashboard.greeting}
+              subtitle={onNotesPage ? undefined : onSchedule ? t.schedule.subtitle : onAbout ? t.about.subtitle : pathname.startsWith("/calendar") ? t.calendar.subtitle : t.dashboard.subtitle}
               overdue={notes.filter(isOverdue).length}
               onBell={() => {
                 setFilters({ ...emptyFilters, deadline: "overdue" })
@@ -126,6 +136,7 @@ function Inner({ children }: { children: React.ReactNode }) {
 
         <NoteDetailDialog
           note={detail}
+          origin={detailOrigin}
           onClose={() => setDetail(null)}
           onEdit={(n) => {
             setDetail(null)
@@ -147,6 +158,7 @@ function Inner({ children }: { children: React.ReactNode }) {
           onExportCsv={doExportCsv}
         />
         {importUi}
+        {scheduleIo.ui}
 
         <AlertDialog open={!!toDelete} onOpenChange={(o) => !o && setToDelete(null)}>
           <AlertDialogContent>

@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { format, parseISO } from "date-fns"
-import { AlignLeft, CalendarDays, CheckSquare, FileText, Flag, Folder, Hash, Link2, Paperclip, Palette, Plus, Type, X, Activity } from "lucide-react"
+import { AlignLeft, Check, CalendarDays, CheckSquare, FileText, Flag, Folder, Hash, Link2, Paperclip, Palette, Plus, Type, X, Activity } from "lucide-react"
 import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -236,10 +236,10 @@ function NoteForm({
                       onClick={() => setCategory(active ? "" : c)}
                       className={cn(
                         "inline-flex h-7 items-center gap-1 rounded-full border px-2.5 text-xs font-medium transition-colors",
-                        active ? "border-primary bg-primary text-primary-foreground" : "bg-background hover:bg-muted"
+                        active ? "border-foreground/30 bg-secondary ring-1 ring-foreground/20" : "bg-background hover:bg-muted"
                       )}
                     >
-                      <Folder className="size-3" /> {c}
+                      {active ? <Check className="size-3" /> : <Folder className="size-3" />} {c}
                     </button>
                   )
                 })}
@@ -263,16 +263,36 @@ function NoteForm({
             </div>
           </Field>
           <Field label={t.status} icon={<Activity />} className="sm:col-span-2">
-            <Select value={status} onValueChange={(v) => setStatus(v as Status)}>
-              <SelectTrigger className="w-full">
-                <SelectValue>{(v: string) => `${STATUS_VISUAL[v as Status].icon} ${t.statuses[v as Status]}`}</SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {STATUSES.map((s) => (
-                  <SelectItem key={s} value={s}>{STATUS_VISUAL[s].icon} {t.statuses[s]}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div role="radiogroup" aria-label={t.status} className="flex flex-wrap gap-1.5">
+              {STATUSES.map((s) => {
+                const active = status === s
+                return (
+                  <button
+                    key={s}
+                    type="button"
+                    role="radio"
+                    aria-checked={active}
+                    onClick={() => setStatus(s)}
+                    className={cn(
+                      "flex h-9 items-center gap-2 rounded-lg border px-3 text-sm whitespace-nowrap transition-colors",
+                      active ? "border-foreground/30 bg-secondary font-medium ring-1 ring-foreground/20" : "bg-background hover:bg-muted"
+                    )}
+                  >
+                    <span
+                      aria-hidden
+                      className={cn(
+                        "flex size-4 shrink-0 items-center justify-center rounded-full border",
+                        active ? "border-foreground" : "border-foreground/30"
+                      )}
+                    >
+                      {active && <span className="size-2 rounded-full bg-foreground" />}
+                    </span>
+                    <span aria-hidden>{STATUS_VISUAL[s].icon}</span>
+                    <span>{t.statuses[s]}</span>
+                  </button>
+                )
+              })}
+            </div>
           </Field>
           <Field label={t.priority} icon={<Flag />}>
             <Select

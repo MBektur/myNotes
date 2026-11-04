@@ -14,6 +14,7 @@ export function MobileBottomNav({ onNew }: { onNew: () => void }) {
     { href: "/", emoji: "🏠", label: t.dashboard.nav, active: pathname === "/" },
     { href: "/notes", emoji: "📝", label: t.notes, active: pathname.startsWith("/notes") },
     { href: "/calendar", emoji: "📅", label: t.dashboard.calendarNav, active: pathname.startsWith("/calendar") },
+    { href: "/schedule", emoji: "🗓️", label: t.schedule.nav, active: pathname.startsWith("/schedule") },
     { href: "/about", emoji: "💜", label: t.about.nav, active: pathname.startsWith("/about") },
   ]
 
@@ -50,6 +51,7 @@ export function MobileBottomNav({ onNew }: { onNew: () => void }) {
       </button>
       {renderItem(items[2])}
       {renderItem(items[3])}
+      {renderItem(items[4])}
     </nav>
   )
 }

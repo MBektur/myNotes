@@ -2,6 +2,7 @@
 
 import Image from "next/image"
 import { t } from "@/lib/i18n"
+import { APP_VERSION, APP_COMMIT } from "@/lib/version"
 
 export function AboutPage() {
   return (
@@ -19,6 +20,10 @@ export function AboutPage() {
       <p className="text-sm leading-relaxed text-muted-foreground">{t.about.body}</p>
       <p className="text-xs text-muted-foreground">{t.about.local}</p>
       <p className="text-xs text-muted-foreground">{t.about.install}</p>
+      <p dir="ltr" className="text-xs tabular-nums text-muted-foreground/70">
+        v{APP_VERSION}
+        {APP_COMMIT ? ` (${APP_COMMIT})` : ""}
+      </p>
     </div>
   )
 }

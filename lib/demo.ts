@@ -89,7 +89,7 @@ export function demoNotes(): Note[] {
     mk({
       updated: 6, status: "done", category: "سېتىش", color: "blue",
       title: "ھەپتىلىك يىغىن خاتىرىسى", tags: ["يىغىن"],
-      content: "ئاساسىي قارارلار: ئاۋۋال ئەپنى تاماملاش، ئاندىن تەشۋىقات.",
+      content: "ئاساسىي قارارلار: ئاۋۋال ئەپنى تاماملاندىلاش، ئاندىن تەشۋىقات.",
     }),
     mk({
       updated: 3, status: "review", priority: "low", category: "ئەپ", color: "purple",
@@ -97,7 +97,7 @@ export function demoNotes(): Note[] {
     }),
     mk({
       updated: 0, status: "todo", priority: "medium", category: "تور بېكەت", color: "green",
-      title: "ئانالىز مەلۇماتلىرىنى تەكشۈرۈش", deadline: day(3), tags: ["ئانالىز"],
+      title: "ئانالىز مەلۇماتلىرىنى تەكشۈرۈلۈۋاتىدۇ", deadline: day(3), tags: ["ئانالىز"],
       content: "ئۆتكەن ئايدىكى زىيارەتچىلەر سانى ۋە ئۇلانما چېكىلىشى.",
     }),
   ]

@@ -153,6 +153,20 @@
 .dark .note-green  { --note-bg: oklch(0.32 0.075 150); --note-bg2: oklch(0.27 0.085 165); --note-chip: oklch(0.50 0.13 150); }
 .dark .note-teal   { --note-bg: oklch(0.32 0.075 205); --note-bg2: oklch(0.27 0.085 190); --note-chip: oklch(0.50 0.13 205); }
 
+/* Esnek (waqti éniq emes) ders: égiz sizilghan sizishlar */
+.hatch { background-image: repeating-linear-gradient(-45deg, transparent 0 6px, oklch(0 0 0 / 0.09) 6px 12px); }
+.dark .hatch { background-image: repeating-linear-gradient(-45deg, transparent 0 6px, oklch(1 0 0 / 0.12) 6px 12px); }
+
+/* Ders ati badge'i: --h = hue (0–360), schedule-page ichide hisablinidu */
+.subject-badge {
+  background: oklch(0.9 0.08 var(--h));
+  color: oklch(0.32 0.1 var(--h));
+}
+.dark .subject-badge {
+  background: oklch(0.42 0.1 var(--h));
+  color: oklch(0.96 0.03 var(--h));
+}
+
 .note-surface {
   background-image: linear-gradient(135deg, var(--note-bg), var(--note-bg2));
 }

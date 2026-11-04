@@ -11,6 +11,9 @@ const Toaster = ({ ...props }: ToasterProps) => {
     <Sonner
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
+      dir="rtl"
+      position="bottom-left"
+      closeButton
       mobileOffset={{ bottom: "6.5rem" }}
       icons={{
         success: (
@@ -35,11 +38,14 @@ const Toaster = ({ ...props }: ToasterProps) => {
           "--normal-text": "var(--popover-foreground)",
           "--normal-border": "var(--border)",
           "--border-radius": "var(--radius)",
+          fontFamily: "var(--font-sans)",
         } as React.CSSProperties
       }
       toastOptions={{
         classNames: {
-          toast: "cn-toast",
+          toast: "cn-toast font-sans text-sm",
+          title: "font-sans",
+          description: "font-sans",
         },
       }}
       {...props}

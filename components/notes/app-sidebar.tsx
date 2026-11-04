@@ -3,9 +3,10 @@
 import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Download, FileSpreadsheet, LogOut, Moon, Sparkles, Sun, Upload } from "lucide-react"
+import { Download, FileSpreadsheet, LogOut, Moon, RotateCcw, Sparkles, Sun, Upload } from "lucide-react"
 import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
+import { Hint } from "@/components/ui/hint"
 import {
   Sidebar,
   SidebarContent,
@@ -33,6 +34,7 @@ export function AppSidebar({
   onImport,
   onDemo,
   onLogout,
+  schedule,
 }: {
   notes: Note[]
   onExport: () => void
@@ -40,6 +42,8 @@ export function AppSidebar({
   onImport: () => void
   onDemo: () => void
   onLogout: () => void
+  /** /schedule sehipiside import/export jeduelge baghlinidu */
+  schedule?: { pickFile: () => void; doExport: () => void; doReset: () => void }
 }) {
   const { resolvedTheme, setTheme } = useTheme()
   const { setOpenMobile } = useSidebar()
@@ -50,6 +54,7 @@ export function AppSidebar({
     { href: "/", emoji: "🏠", label: t.dashboard.nav, active: pathname === "/" },
     { href: "/notes", emoji: "📝", label: t.notes, active: pathname.startsWith("/notes"), badge: notes.length },
     { href: "/calendar", emoji: "📅", label: t.dashboard.calendarNav, active: pathname.startsWith("/calendar") },
+    { href: "/schedule", emoji: "🗓️", label: t.schedule.nav, active: pathname.startsWith("/schedule") },
     { href: "/about", emoji: "💜", label: t.about.nav, active: pathname.startsWith("/about") },
   ]
 
@@ -97,10 +102,18 @@ export function AppSidebar({
         </div>
         <div className="flex items-center justify-between px-1">
           {[
-            { label: `${t.io.export} JSON`, icon: <Download />, onClick: onExport },
-            { label: t.io.exportCsv, icon: <FileSpreadsheet />, onClick: onExportCsv },
-            { label: `${t.io.import} (${t.io.importHint})`, icon: <Upload />, onClick: onImport },
-            { label: t.dashboard.loadDemoUi, icon: <Sparkles />, onClick: onDemo },
+            ...(schedule
+              ? [
+                  { label: t.schedule.importCsv, icon: <Upload />, onClick: schedule.pickFile },
+                  { label: t.schedule.exportCsv, icon: <FileSpreadsheet />, onClick: schedule.doExport },
+                  { label: t.schedule.reset, icon: <RotateCcw />, onClick: schedule.doReset },
+                ]
+              : [
+                  { label: `${t.io.export} JSON`, icon: <Download />, onClick: onExport },
+                  { label: t.io.exportCsv, icon: <FileSpreadsheet />, onClick: onExportCsv },
+                  { label: `${t.io.import} (${t.io.importHint})`, icon: <Upload />, onClick: onImport },
+                  { label: t.dashboard.loadDemoUi, icon: <Sparkles />, onClick: onDemo },
+                ]),
             {
               label: t.theme.toggle,
               icon: (
@@ -112,18 +125,18 @@ export function AppSidebar({
               onClick: () => setTheme(resolvedTheme === "dark" ? "light" : "dark"),
             },
             { label: t.logout, icon: <LogOut />, onClick: onLogout },
-          ].map((a) => (
-            <Button
-              key={a.label}
-              variant="ghost"
-              size="icon"
-              aria-label={a.label}
-              title={a.label}
-              className="rounded-xl hover:bg-white/60 dark:hover:bg-white/10"
-              onClick={a.onClick}
-            >
-              {a.icon}
-            </Button>
+          ].map((a, i, all) => (
+            <Hint key={a.label} label={a.label} side="top" align={i === 0 ? "start" : i === all.length - 1 ? "end" : "center"}>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={a.label}
+                className="rounded-xl hover:bg-white/60 dark:hover:bg-white/10"
+                onClick={a.onClick}
+              >
+                {a.icon}
+              </Button>
+            </Hint>
           ))}
         </div>
       </SidebarFooter>

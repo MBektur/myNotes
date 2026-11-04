@@ -26,11 +26,12 @@ export function ListView({
         return (
           <li
             key={n.id}
+            data-note-card
             className={cn(`note-${noteColor(n)}`, "flex items-center gap-3 border-s-4 border-[var(--note-chip)] px-3 py-2.5")}
           >
             <button
               type="button"
-              onClick={() => open(n)}
+              onClick={(e) => open(n, e.currentTarget)}
               className="flex min-w-0 flex-1 flex-col gap-1 text-start sm:flex-row sm:items-center sm:gap-3"
             >
               <span className="min-w-0 flex-1 truncate font-medium">
