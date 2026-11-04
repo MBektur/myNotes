@@ -35,7 +35,7 @@ export function MobileBottomNav({ onNew }: { onNew: () => void }) {
   return (
     <nav
       aria-label="Main"
-      className="clay fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-40 flex items-center gap-1 rounded-3xl p-1.5 md:hidden"
+      className="clay fixed inset-x-0 bottom-0 z-40 flex items-center gap-1 rounded-b-none rounded-t-3xl px-3 pt-1.5 pb-[max(0.375rem,env(safe-area-inset-bottom))] md:hidden"
     >
       {renderItem(items[0])}
       {renderItem(items[1])}

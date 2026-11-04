@@ -97,7 +97,7 @@ function Inner({ children }: { children: React.ReactNode }) {
           onLogout={logout}
         />
         <SidebarInset className="app-bg min-w-0 bg-transparent">
-          <div className="flex flex-1 flex-col gap-4 p-4 pb-28 md:p-6">
+          <div className="flex flex-1 flex-col gap-4 p-4 pb-32 md:p-6">
             <AppHeader
               title={onNotesPage ? t.notes : onAbout ? t.about.title : pathname.startsWith("/calendar") ? t.calendar.title : t.dashboard.greeting}
               subtitle={onNotesPage ? undefined : onAbout ? t.about.subtitle : pathname.startsWith("/calendar") ? t.calendar.subtitle : t.dashboard.subtitle}
