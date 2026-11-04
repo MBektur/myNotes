@@ -71,15 +71,65 @@ export function SidePanel({
     saveWidth(widthRef.current)
   }
 
+  // ---- Mobilda barmaq bilen sol terepke sörep yépish (swipe) ----
+  const popupRef = React.useRef<HTMLDivElement>(null)
+  const swipe = React.useRef<{ x0: number; y0: number; t0: number; axis: "x" | "y" | null; dx: number } | null>(null)
+
+  const swipeStart = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType !== "touch" || !window.matchMedia("(max-width: 639px)").matches) return
+    if ((e.target as Element).closest("[data-no-swipe], input, textarea, select")) return
+    swipe.current = { x0: e.clientX, y0: e.clientY, t0: e.timeStamp, axis: null, dx: 0 }
+  }
+  const swipeMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const g = swipe.current
+    const el = popupRef.current
+    if (!g || !el) return
+    const dx = e.clientX - g.x0
+    const dy = e.clientY - g.y0
+    if (!g.axis) {
+      if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return
+      g.axis = Math.abs(dx) > Math.abs(dy) * 1.2 ? "x" : "y"
+      if (g.axis === "x") e.currentTarget.setPointerCapture(e.pointerId)
+    }
+    if (g.axis !== "x") return
+    g.dx = Math.min(0, dx) // panel sol kéniridin ach; peqet sol terepke
+    el.style.transition = "none"
+    el.style.transform = `translateX(${g.dx}px)`
+  }
+  const swipeEnd = (e: React.PointerEvent<HTMLDivElement>) => {
+    const g = swipe.current
+    const el = popupRef.current
+    swipe.current = null
+    if (!g || !el || g.axis !== "x") return
+    const w = el.offsetWidth
+    const velocity = g.dx / Math.max(1, e.timeStamp - g.t0) // px/ms, mansiy = sol terepke
+    el.style.transition = "transform 180ms ease-out"
+    if (g.dx < -w * 0.3 || velocity < -0.5) {
+      el.style.transform = `translateX(-${w}px)`
+      window.setTimeout(() => onOpenChange(false), 150)
+    } else {
+      el.style.transform = "translateX(0)"
+      window.setTimeout(() => {
+        el.style.transition = ""
+        el.style.transform = ""
+      }, 190)
+    }
+  }
+
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Backdrop className="fixed inset-0 z-50 bg-black/20 transition-opacity duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0 supports-backdrop-filter:backdrop-blur-[3px]" />
         <Dialog.Popup
+          ref={popupRef}
+          onPointerDown={swipeStart}
+          onPointerMove={swipeMove}
+          onPointerUp={swipeEnd}
+          onPointerCancel={swipeEnd}
           dir="rtl"
           style={{ "--panel-w": `${width}px` } as React.CSSProperties}
           className={cn(
-            "fixed inset-y-0 left-0 z-50 flex h-full w-[min(var(--panel-w),90vw)] flex-col bg-popover text-popover-foreground shadow-2xl outline-none max-sm:w-full",
+            "fixed inset-y-0 left-0 z-50 flex h-full w-[min(var(--panel-w),90vw)] touch-pan-y flex-col bg-popover text-popover-foreground shadow-2xl outline-none max-sm:w-full",
             "border-e transition duration-200 ease-out data-ending-style:-translate-x-8 data-ending-style:opacity-0 data-starting-style:-translate-x-8 data-starting-style:opacity-0"
           )}
         >
