@@ -2,40 +2,52 @@
 
 import * as React from "react"
 import { defaultLessons, defaultPeople } from "./schedule-data"
+import { toast } from "sonner"
+import { t } from "./i18n"
 import type { ScheduleData } from "./schedule-csv"
+import { clearRemoteSchedule, fetchSchedule, pushSchedule } from "./schedule-repo"
 
-const KEY = "mynotes.schedule.v6"
 const DEFAULT: ScheduleData = { people: defaultPeople, lessons: defaultLessons }
 
-let cache: ScheduleData | null = null
+let cache: ScheduleData = DEFAULT
 const listeners = new Set<() => void>()
+let queue: Promise<unknown> = Promise.resolve()
 
 function read(): ScheduleData {
-  if (cache) return cache
-  try {
-    const raw = localStorage.getItem(KEY)
-    if (raw) {
-      const d = JSON.parse(raw) as ScheduleData
-      if (Array.isArray(d.people) && Array.isArray(d.lessons)) return (cache = d)
-    }
-  } catch { }
-  return (cache = DEFAULT)
+  return cache
 }
 
 function emit() {
   listeners.forEach((l) => l())
 }
 
+/** Yazmalar tertipte (ketma-ket) ishlinidu; xata bolsa xewer berilidu. */
+function enqueue(job: () => Promise<void>) {
+  queue = queue.then(job).catch(() => {
+    toast.error(t.sync.failed)
+  })
+}
+
+/** Kirgendin kéyin bir qétim: Supabase'tiki programni yüklep keshke qoyidu (bolmisa dessleptiki). */
+export async function initSchedule() {
+  try {
+    cache = (await fetchSchedule()) ?? DEFAULT
+    emit()
+  } catch {
+    toast.error(t.sync.failed)
+  }
+}
+
 export function saveSchedule(data: ScheduleData) {
   cache = data
-  try { localStorage.setItem(KEY, JSON.stringify(data)) } catch { }
   emit()
+  enqueue(() => pushSchedule(data))
 }
 
 export function resetSchedule() {
   cache = DEFAULT
-  try { localStorage.removeItem(KEY) } catch { }
   emit()
+  enqueue(clearRemoteSchedule)
 }
 
 const subscribe = (cb: () => void) => {
@@ -43,7 +55,7 @@ const subscribe = (cb: () => void) => {
   return () => { listeners.delete(cb) }
 }
 
-/** Dessleptiki schedule yaki CSV arqiliq kirgüzülgen schedule (brauzérda saqlinidu) */
+/** Dessleptiki schedule yaki CSV arqiliq kirgüzülgen schedule (Supabase'de saqlinidu) */
 export function useSchedule(): ScheduleData {
   return React.useSyncExternalStore(subscribe, read, () => DEFAULT)
 }

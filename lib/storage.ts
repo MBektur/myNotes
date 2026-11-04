@@ -27,15 +27,6 @@ export function loadNotes(): Note[] {
   }
 }
 
-export function saveNotes(notes: Note[]) {
-  try {
-    const data: StoredData = { version: 1, notes }
-    localStorage.setItem(DATA_KEY, JSON.stringify(data))
-  } catch {
-    /* quota / private mode */
-  }
-}
-
 export function loadView(): ViewMode {
   try {
     const v = localStorage.getItem(VIEW_KEY)

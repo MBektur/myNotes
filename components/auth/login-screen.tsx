@@ -4,21 +4,22 @@ import * as React from "react"
 import { NotebookPen } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { checkPassword } from "@/lib/auth"
+import { isSupabaseConfigured, supabase } from "@/lib/supabase/client"
 import { t } from "@/lib/i18n"
 
-export function LoginScreen({ onSuccess }: { onSuccess: () => void }) {
-  const [value, setValue] = React.useState("")
+export function LoginScreen() {
+  const [email, setEmail] = React.useState("")
+  const [password, setPassword] = React.useState("")
   const [error, setError] = React.useState(false)
   const [busy, setBusy] = React.useState(false)
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
     setBusy(true)
-    const ok = await checkPassword(value)
+    const { error } = await supabase().auth.signInWithPassword({ email: email.trim(), password })
     setBusy(false)
-    if (ok) onSuccess()
-    else setError(true)
+    // Uğurluq bolsa AuthGate onAuthStateChange arqiliq özi yéngilinidu
+    if (error) setError(true)
   }
 
   return (
@@ -34,25 +35,43 @@ export function LoginScreen({ onSuccess }: { onSuccess: () => void }) {
           <h1 className="text-xl font-medium">{t.appName}</h1>
           <p className="text-sm text-muted-foreground">{t.login.subtitle}</p>
         </div>
-        <div className="space-y-2">
-          <Input
-            type="password"
-            dir="ltr"
-            autoFocus
-            autoComplete="current-password"
-            placeholder={t.login.password}
-            value={value}
-            aria-invalid={error}
-            onChange={(e) => {
-              setValue(e.target.value)
-              setError(false)
-            }}
-          />
-          {error && <p className="text-sm text-destructive">{t.login.wrong}</p>}
-        </div>
-        <Button type="submit" className="w-full" disabled={busy || !value}>
-          {t.login.submit}
-        </Button>
+        {!isSupabaseConfigured ? (
+          <p className="text-center text-sm text-destructive">{t.login.notConfigured}</p>
+        ) : (
+          <>
+            <div className="space-y-2">
+              <Input
+                type="email"
+                dir="ltr"
+                autoFocus
+                autoComplete="email"
+                placeholder={t.login.email}
+                value={email}
+                aria-invalid={error}
+                onChange={(e) => {
+                  setEmail(e.target.value)
+                  setError(false)
+                }}
+              />
+              <Input
+                type="password"
+                dir="ltr"
+                autoComplete="current-password"
+                placeholder={t.login.password}
+                value={password}
+                aria-invalid={error}
+                onChange={(e) => {
+                  setPassword(e.target.value)
+                  setError(false)
+                }}
+              />
+              {error && <p className="text-sm text-destructive">{t.login.wrong}</p>}
+            </div>
+            <Button type="submit" className="w-full" disabled={busy || !email || !password}>
+              {t.login.submit}
+            </Button>
+          </>
+        )}
       </form>
     </main>
   )

@@ -1,9 +1,13 @@
 "use client"
 
 import * as React from "react"
+import { toast } from "sonner"
 import { deleteBlobs } from "./blobs"
-import { demoNotes } from "./demo"
-import { hasStoredData, loadNotes, saveNotes } from "./storage"
+import { t } from "./i18n"
+import { hasLegacyData, markMigrated, readLegacySchedule, uploadLegacyNotes } from "./migrate"
+import { deleteNotes, listNotes, rowToNote, upsertNotes } from "./notes-repo"
+import { saveSchedule } from "./schedule-store"
+import { supabase } from "./supabase/client"
 import { newId, type Note, type Status } from "./types"
 import { ug } from "./ug"
 
@@ -21,6 +25,8 @@ export function normalizeNote<T extends Partial<Note>>(n: T): T {
 
 type Action =
   | { type: "hydrate"; notes: Note[] }
+  | { type: "remoteUpsert"; note: Note }
+  | { type: "remoteRemove"; id: string }
   | { type: "add"; note: Note }
   | { type: "update"; id: string; patch: Partial<Note> }
   | { type: "remove"; id: string }
@@ -33,7 +39,8 @@ type Action =
 type State = { notes: Note[]; hydrated: boolean }
 
 function reducer(state: State, a: Action): State {
-  if (a.type === "hydrate") return { notes: a.notes.map(normalizeNote), hydrated: true }
+  // hydrate: notes zaten normalize qilinghan (store snapshot bilen oxshash obyékt bolushi kerek)
+  if (a.type === "hydrate") return { notes: a.notes, hydrated: true }
   return { ...state, notes: notesReducer(state.notes, a) }
 }
 
@@ -42,6 +49,12 @@ function notesReducer(state: Note[], a: Action): Note[] {
   switch (a.type) {
     case "hydrate":
       return state
+    case "remoteUpsert":
+      return state.some((n) => n.id === a.note.id)
+        ? state.map((n) => (n.id === a.note.id ? a.note : n))
+        : [a.note, ...state]
+    case "remoteRemove":
+      return state.filter((n) => n.id !== a.id)
     case "add":
       return [a.note, ...state]
     case "update": {
@@ -106,6 +119,28 @@ type Store = {
   importReplace: (notes: Note[]) => void
 }
 
+function offerMigration(dispatch: React.Dispatch<Action>) {
+  toast(t.sync.migratePrompt, {
+    duration: Infinity,
+    action: {
+      label: t.sync.migrateAction,
+      onClick: async () => {
+        const id = toast.loading(t.sync.migrating)
+        try {
+          const local = (await uploadLegacyNotes()).map(normalizeNote)
+          dispatch({ type: "importMerge", notes: local })
+          const sched = readLegacySchedule()
+          if (sched) saveSchedule(sched)
+          markMigrated()
+          toast.success(t.sync.migrated, { id })
+        } catch {
+          toast.error(t.sync.migrateFailed, { id })
+        }
+      },
+    },
+  })
+}
+
 const Ctx = React.createContext<Store | null>(null)
 
 export function NotesProvider({ children }: { children: React.ReactNode }) {
@@ -114,14 +149,90 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
     hydrated: false,
   })
 
-  React.useEffect(() => {
-    // İlk ziyaret (kayıt yok): demo xatirilerni aptomatik yüklew.
-    dispatch({ type: "hydrate", notes: hasStoredData() ? loadNotes() : demoNotes() })
+  // Supabase'ke sinxronlanghan eng axirqi holet (id -> Note obyékti). Reducer özgertmigen xatirilerning obyékti oxshash qalidu,
+  // shuning bilen "özgergenler" peqet obyékt sélishturush arqiliq tapilidu.
+  const snapshot = React.useRef(new Map<string, Note>())
+  const pending = React.useRef(0)
+  const lastWrite = React.useRef(0)
+  const queue = React.useRef<Promise<unknown>>(Promise.resolve())
+
+  const load = React.useCallback(async (initial: boolean) => {
+    try {
+      const remote = (await listNotes()).map(normalizeNote)
+      if (pending.current > 0) return // yézish dawamlishiwatidu: aldirimay yüklimeymiz
+      snapshot.current = new Map(remote.map((n) => [n.id, n]))
+      dispatch({ type: "hydrate", notes: remote })
+      if (initial && remote.length === 0 && hasLegacyData()) offerMigration(dispatch)
+    } catch {
+      toast.error(t.sync.loadFailed)
+    }
   }, [])
 
   React.useEffect(() => {
-    if (hydrated) saveNotes(notes)
-  }, [notes, hydrated])
+    void load(true)
+
+    const db = supabase()
+    const channel = db
+      .channel("notes-sync")
+      .on("postgres_changes", { event: "*", schema: "public", table: "notes" }, (p) => {
+        // Özimizning yézishimiz yaki yéqinqi yézishning "echo"si bolsa étibar bermeymiz
+        if (pending.current > 0 || Date.now() - lastWrite.current < 3000) return
+        if (p.eventType === "DELETE") {
+          const id = (p.old as { id?: string }).id
+          if (!id || !snapshot.current.has(id)) return
+          snapshot.current.delete(id)
+          dispatch({ type: "remoteRemove", id })
+          return
+        }
+        const note = normalizeNote(rowToNote(p.new))
+        const cur = snapshot.current.get(note.id)
+        if (cur && cur.updatedAt > note.updatedAt) return
+        if (cur && cur.updatedAt === note.updatedAt && cur.order === note.order && cur.status === note.status) return
+        snapshot.current.set(note.id, note)
+        dispatch({ type: "remoteUpsert", note })
+      })
+      .subscribe()
+
+    const onVisible = () => {
+      if (document.visibilityState === "visible" && pending.current === 0 && Date.now() - lastWrite.current > 3000)
+        void load(false)
+    }
+    document.addEventListener("visibilitychange", onVisible)
+    return () => {
+      document.removeEventListener("visibilitychange", onVisible)
+      void db.removeChannel(channel)
+    }
+  }, [load])
+
+  // Özgirishlerni (qoshush / yéngilash / öchürüsh) Supabase'ke yollash. Utuq yaki xata optimistik: UI aldin yéngilinidu.
+  React.useEffect(() => {
+    if (!hydrated) return
+    const snap = snapshot.current
+    const ids = new Set(notes.map((n) => n.id))
+    const changed = notes.filter((n) => snap.get(n.id) !== n)
+    const removed = [...snap.keys()].filter((id) => !ids.has(id))
+    if (!changed.length && !removed.length) return
+    changed.forEach((n) => snap.set(n.id, n))
+    removed.forEach((id) => snap.delete(id))
+
+    pending.current++
+    lastWrite.current = Date.now()
+    queue.current = queue.current
+      .then(async () => {
+        if (changed.length) await upsertNotes(changed)
+        if (removed.length) await deleteNotes(removed)
+        return false
+      })
+      .catch(() => {
+        toast.error(t.sync.failed)
+        return true
+      })
+      .then((failed) => {
+        pending.current--
+        lastWrite.current = Date.now()
+        if (failed && pending.current === 0) void load(false) // serwer bilen qaytidin teng qilish
+      })
+  }, [notes, hydrated, load])
 
   const value = React.useMemo<Store>(
     () => ({

@@ -25,6 +25,7 @@ import { t } from "@/lib/i18n"
 import { ug } from "@/lib/ug"
 import { useNotes } from "@/lib/notes-store"
 import { deleteBlobs, putBlob, useBlobUrl } from "@/lib/blobs"
+import { compressImage } from "@/lib/image"
 import {
   NOTE_COLORS,
   PRIORITIES,
@@ -147,14 +148,14 @@ function NoteForm({
     setTagInput("")
   }
 
-  function addFiles(list: FileList | null) {
-    if (!list) return
+  async function addFiles(list: File[]) {
     const added: Attachment[] = []
     const files: Record<string, File> = {}
-    for (const f of Array.from(list)) {
-      const kind = f.type.startsWith("image/") ? "image" : f.type === "application/pdf" ? "pdf" : null
+    for (const f0 of list) {
+      const kind = f0.type.startsWith("image/") ? "image" : f0.type === "application/pdf" ? "pdf" : null
       if (!kind) { toast.error(t.form.fileBadType); continue }
-      if (f.size > MAX_FILE) { toast.error(t.form.fileTooBig); continue }
+      if (f0.size > MAX_FILE) { toast.error(t.form.fileTooBig); continue }
+      const f = kind === "image" ? await compressImage(f0) : f0
       const id = newId()
       added.push({ id, kind, name: f.name, size: f.size, type: f.type })
       files[id] = f
@@ -431,7 +432,7 @@ function NoteForm({
                 accept="image/*,application/pdf"
                 className="sr-only"
                 onChange={(e) => {
-                  addFiles(e.target.files)
+                  addFiles(Array.from(e.target.files ?? []))
                   e.target.value = ""
                 }}
               />

@@ -1,8 +1,9 @@
 "use client"
 
 import * as React from "react"
+import { currentUserId, supabase } from "./supabase/client"
 
-/** Resim/PDF fayllar IndexedDB'de saqlinidu (localStorage kichik). Xatire peqet metadata'ni saqlaydu. */
+/** Resim/PDF fayllar Supabase Storage'da saqlinidu; IndexedDB peqet kesh. Xatire peqet metadata'ni saqlaydu. */
 const DB = "mynotes-files"
 const STORE = "blobs"
 
@@ -30,11 +31,39 @@ async function run<T>(mode: IDBTransactionMode, fn: (s: IDBObjectStore) => IDBRe
   }
 }
 
-export const putBlob = (id: string, blob: Blob) => run("readwrite", (s) => s.put(blob, id)).then(() => {})
+const BUCKET = "attachments"
+const path = async (id: string) => `${await currentUserId()}/${id}`
+
+const cachePut = (id: string, blob: Blob) => run("readwrite", (s) => s.put(blob, id)).then(() => {})
 export const getBlob = (id: string) => run<Blob | undefined>("readonly", (s) => s.get(id))
+
+/** Faylni Supabase Storage'gha yüklep, IndexedDB keshigimu saqlaydu. */
+export async function putBlob(id: string, blob: Blob) {
+  const { error } = await supabase()
+    .storage.from(BUCKET)
+    .upload(await path(id), blob, { upsert: true, contentType: blob.type || undefined })
+  if (error) throw error
+  await cachePut(id, blob).catch(() => {})
+}
+
+/** Storage'dan (yaki keshtin) fayl oquydu. */
+export async function fetchBlob(id: string): Promise<Blob | undefined> {
+  const cached = await getBlob(id).catch(() => undefined)
+  if (cached) return cached
+  const { data, error } = await supabase().storage.from(BUCKET).download(await path(id))
+  if (error || !data) return undefined
+  await cachePut(id, data).catch(() => {})
+  return data
+}
 
 export async function deleteBlobs(ids: string[]) {
   if (!ids.length) return
+  try {
+    const paths = await Promise.all(ids.map(path))
+    await supabase().storage.from(BUCKET).remove(paths)
+  } catch {
+    /* tor yoq yaki allaqachan öchürülgen */
+  }
   try {
     const db = await open()
     const tx = db.transaction(STORE, "readwrite")
@@ -57,7 +86,7 @@ export function useBlobUrl(id: string, pending?: Blob): string | null {
       setUrl(created)
     }
     if (pending) set(pending)
-    else getBlob(id).then(set).catch(() => {})
+    else fetchBlob(id).then(set).catch(() => {})
     return () => {
       revoked = true
       if (created) URL.revokeObjectURL(created)

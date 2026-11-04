@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Status
 
-Freshly scaffolded `create-next-app` project (app name `my-app`, folder `myNotes`). `app/page.tsx` is still the default template; no notes functionality, data layer, or tests exist yet. Not a git repository.
+Notes/kanban/calendar/schedule app (Uyghur UI, RTL). Data lives in **Supabase** (Postgres + Storage + Auth); schema in `supabase/migrations/0001_init.sql`, env vars in `.env.example`. Browser-only client (`lib/supabase/client.ts`), no server client/proxy: access is protected by RLS. Notes sync = optimistic reducer + snapshot diff in `lib/notes-store.tsx` (+ realtime); schedule in `lib/schedule-store.ts`; attachments in `lib/blobs.ts` (Storage, IndexedDB as cache). UI prefs (view/sort/filters) stay in localStorage. No test runner.
 
 ## Commands
 
