@@ -103,4 +103,7 @@ export const defaultLessons: Lesson[] = [
   { id: "l54", personId: "teacher", day: 3, start: "12:30", end: "15:29", subject: "Power Electronic Circuits", from: "2026-10-05", to: "2027-01-17", note: "ELK 331E · Ayazağa, EEB · 5105" },
   { id: "l55", personId: "teacher", day: 4, start: "12:30", end: "15:29", subject: "Circuit and System Analysis", from: "2026-10-05", to: "2027-01-17", note: "EEF 232E · Ayazağa, EEB · 5202" },
   { id: "l56", personId: "teacher", day: 5, start: "14:00", end: "16:59", subject: "Artificial Neural Networks", from: "2026-10-05", to: "2027-01-17", note: "EHB 420E · Ayazağa, MDB · A14" },
+  { id: "l57", personId: "ehsan", day: 6, start: "08:00", end: "10:00", subject: "ئىنگلىز تىلى", from: "2026-10-05", to: "2027-01-17" },
+  { id: "l58", personId: "ehsan", day: 0, start: "10:00", end: "12:00", subject: "ئىنگلىز تىلى", from: "2026-10-05", to: "2027-01-17" },
+  { id: "l59", personId: "ehsan", day: 0, start: "09:00", end: "10:00", subject: "مۇز تېيىلىش", from: "2026-10-05", to: "2027-01-17" },
 ]

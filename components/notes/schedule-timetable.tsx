@@ -84,10 +84,10 @@ export function ScheduleTimetable({
       </div>
 
       <div className="grid min-w-0 flex-1 grid-cols-1 md:grid-cols-7">
-        {perDay.map((d) => {
+        {perDay.map((d, i) => {
           const isToday = d.k === todayKey
           return (
-            <div key={d.wd} className={cn("min-w-0 border-s border-border/60", activeMobile !== d.wd && "hidden md:block")}>
+            <div key={d.wd} className={cn("min-w-0 border-s border-border/60", i % 2 === 1 && "bg-muted/50", activeMobile !== d.wd && "hidden md:block")}>
               <div className={cn("flex h-14 flex-col items-center justify-center", isToday && "text-primary")}>
                 <span className="text-xs">{t.calendar.weekdays[d.wd]}</span>
                 <span

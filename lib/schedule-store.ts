@@ -4,7 +4,7 @@ import * as React from "react"
 import { defaultLessons, defaultPeople } from "./schedule-data"
 import type { ScheduleData } from "./schedule-csv"
 
-const KEY = "mynotes.schedule.v5"
+const KEY = "mynotes.schedule.v6"
 const DEFAULT: ScheduleData = { people: defaultPeople, lessons: defaultLessons }
 
 let cache: ScheduleData | null = null
