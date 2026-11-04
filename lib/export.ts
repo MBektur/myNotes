@@ -32,6 +32,7 @@ const noteSchema = z.object({
     )
     .optional(),
   color: z.enum(NOTE_COLORS).optional(),
+  order: z.number().optional(),
 })
 
 const fileSchema = z.object({ version: z.number(), notes: z.array(noteSchema) })

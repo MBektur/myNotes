@@ -25,6 +25,7 @@ type Action =
   | { type: "update"; id: string; patch: Partial<Note> }
   | { type: "remove"; id: string }
   | { type: "move"; id: string; status: Status }
+  | { type: "reorder"; items: { id: string; status: Status; order: number }[] }
   | { type: "toggleChecklist"; id: string; itemId: string }
   | { type: "importMerge"; notes: Note[] }
   | { type: "importReplace"; notes: Note[] }
@@ -58,6 +59,15 @@ function notesReducer(state: Note[], a: Action): Note[] {
           ? { ...n, status: a.status, updatedAt: now }
           : n
       )
+    case "reorder": {
+      // Tertip özgirishi "yéngilanghan waqit"ni özgertmeydu; peqet ornini almashturghan (status özgergen) xatirila yéngilinidu.
+      const by = new Map(a.items.map((i) => [i.id, i]))
+      return state.map((n) => {
+        const i = by.get(n.id)
+        if (!i) return n
+        return { ...n, order: i.order, ...(i.status !== n.status ? { status: i.status, updatedAt: now } : null) }
+      })
+    }
     case "toggleChecklist":
       return state.map((n) =>
         n.id === a.id
@@ -90,6 +100,7 @@ type Store = {
   update: (id: string, patch: Partial<Note>) => void
   remove: (id: string) => void
   move: (id: string, status: Status) => void
+  reorder: (items: { id: string; status: Status; order: number }[]) => void
   toggleChecklist: (id: string, itemId: string) => void
   importMerge: (notes: Note[]) => void
   importReplace: (notes: Note[]) => void
@@ -137,6 +148,7 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
         dispatch({ type: "remove", id })
       },
       move: (id, status) => dispatch({ type: "move", id, status }),
+      reorder: (items) => dispatch({ type: "reorder", items }),
       toggleChecklist: (id, itemId) =>
         dispatch({ type: "toggleChecklist", id, itemId }),
       importMerge: (n) => dispatch({ type: "importMerge", notes: n.map(normalizeNote) }),

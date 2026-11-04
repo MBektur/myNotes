@@ -27,7 +27,7 @@ export function NotesPage() {
           ))}
         </div>
       ) : view === "kanban" ? (
-        <KanbanView notes={visible} onEdit={edit} onDelete={askDelete} onAdd={add} />
+        <KanbanView notes={visible} onEdit={edit} onDelete={askDelete} onAdd={add} onReorder={() => setSortBy("manual")} />
       ) : visible.length === 0 ? (
         <div className="clay flex flex-col items-center gap-2 py-16 text-center">
           <NotebookPen className="size-8 text-muted-foreground" />

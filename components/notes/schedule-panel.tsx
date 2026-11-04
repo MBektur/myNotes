@@ -18,8 +18,8 @@ const fmtKey = (k: string) => {
 
 function InfoCard({ icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) {
   return (
-    <div className="space-y-1 rounded-2xl border bg-background p-3 text-sm">
-      <div className="flex items-center gap-1.5 text-xs text-muted-foreground [&>svg]:size-3.5">{icon} {label}</div>
+    <div className="space-y-1.5 rounded-2xl border bg-background p-3.5 text-[15px]">
+      <div className="flex items-center gap-1.5 text-[13px] text-muted-foreground [&>svg]:size-4">{icon} {label}</div>
       <div className="leading-snug break-words">{children}</div>
     </div>
   )
@@ -60,9 +60,9 @@ export function SchedulePanel({
         )}
 
         <section className={cn(`note-${person.color} note-surface space-y-2 rounded-2xl p-4 shadow-sm`, l.flexible && "border-2 border-dashed")} style={l.flexible ? { borderColor: "var(--note-chip)" } : undefined}>
-          <div className="flex items-center justify-between gap-2 text-xs font-medium text-foreground/70">
+          <div className="flex items-center justify-between gap-2 text-sm font-semibold text-foreground/75">
             <span>{t.schedule.panel.dateTime}</span>
-            <span className="rounded-full bg-foreground/10 px-2 py-0.5">{t.schedule.panel.duration(dur)}</span>
+            <span className="rounded-full bg-foreground/10 px-2.5 py-0.5 text-xs">{t.schedule.panel.duration(dur)}</span>
           </div>
           <div className="flex items-center gap-2 text-lg font-medium">
             <CalendarDays className="size-5 shrink-0" />
@@ -72,12 +72,12 @@ export function SchedulePanel({
             <Clock className="size-4 shrink-0" /> {l.flexible && "~ "}{l.start}–{l.end}
           </div>
           {(before > 0 || after > 0) && (
-            <div className="space-y-0.5 border-t border-foreground/10 pt-2 text-xs text-foreground/80">
+            <div className="space-y-0.5 border-t border-foreground/10 pt-2 text-[13px] text-foreground/80">
               {before > 0 && <div className="flex items-center gap-1.5"><Car className="size-3.5" /> {t.schedule.panel.travelBefore(before)}</div>}
               {after > 0 && <div className="flex items-center gap-1.5"><Car className="size-3.5" /> {t.schedule.panel.travelAfter(after)}</div>}
             </div>
           )}
-          {l.flexible && <p className="text-xs">~ {t.schedule.flexibleTag} · {t.schedule.flexibleHint}</p>}
+          {l.flexible && <p className="text-[13px]">~ {t.schedule.flexibleTag} · {t.schedule.flexibleHint}</p>}
         </section>
 
         <section className={cn(`note-${person.color} flex items-center gap-3 rounded-2xl border bg-background p-3`)}>
@@ -85,9 +85,9 @@ export function SchedulePanel({
             {person.name[0]}
           </span>
           <div className="min-w-0">
-            <div className="text-xs text-muted-foreground">{t.schedule.panel.person}</div>
+            <div className="text-[13px] text-muted-foreground">{t.schedule.panel.person}</div>
             <div className="truncate text-base font-medium">{person.name}</div>
-            <div className="text-xs text-muted-foreground">{t.schedule.panel.travelPerson(person.travelMin ?? 15)}</div>
+            <div className="text-[13px] text-muted-foreground">{t.schedule.panel.travelPerson(person.travelMin ?? 15)}</div>
           </div>
         </section>
 
@@ -102,7 +102,7 @@ export function SchedulePanel({
 
         {mine.length > 1 && (
           <section className="space-y-2">
-            <h4 className="text-xs font-medium text-foreground/60">{t.schedule.panel.dayLessons}</h4>
+            <h4 className="text-[15px] font-semibold text-foreground/80">{t.schedule.panel.dayLessons}</h4>
             <ul className="space-y-1.5">
               {mine.map((x) => (
                 <li key={x.id}>
@@ -114,8 +114,8 @@ export function SchedulePanel({
                       x.id === l.id && "border-primary ring-1 ring-primary"
                     )}
                   >
-                    <span className="tabular-nums text-xs text-muted-foreground">{x.flexible && "~ "}{x.start}–{x.end}</span>
-                    <SubjectBadge subject={x.subject} hue={hues.get(x.subject)} className="text-xs" />
+                    <span className="tabular-nums text-sm text-muted-foreground">{x.flexible && "~ "}{x.start}–{x.end}</span>
+                    <SubjectBadge subject={x.subject} hue={hues.get(x.subject)} className="text-[13px]" />
                   </button>
                 </li>
               ))}
@@ -130,7 +130,7 @@ export function SchedulePanel({
     <SidePanel
       open={!!valid}
       onOpenChange={(o) => !o && onClose()}
-      badges={shown && <SubjectBadge subject={shown.lesson.subject} hue={hues.get(shown.lesson.subject)} className="text-xs" />}
+      badges={shown && <SubjectBadge subject={shown.lesson.subject} hue={hues.get(shown.lesson.subject)} className="px-3 py-0.5 text-[13px]" />}
       title={shown ? `${byId[shown.lesson.personId].name} · ${shown.lesson.subject}` : null}
       footer={<Button type="button" variant="outline" className={panelBtn} onClick={onClose}>{t.detail.close}</Button>}
     >

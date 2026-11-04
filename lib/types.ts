@@ -53,6 +53,8 @@ export type Note = {
   checklist: ChecklistItem[]
   attachments?: Attachment[]
   color?: NoteColor
+  /** Qolda tertiplesh (kanban sörep tertipligen) üchün orun nomuri; kichik = yuqiri */
+  order?: number
 }
 
 export type ViewMode = "kanban" | "card" | "list"

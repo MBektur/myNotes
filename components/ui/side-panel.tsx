@@ -86,7 +86,7 @@ export function SidePanel({
           <header className={cn("relative shrink-0 space-y-2 border-b px-5 pt-5 pb-4 pe-14", headerClassName)}>
             {badges && <div className="flex flex-wrap items-center gap-1.5">{badges}</div>}
             <Dialog.Title className="font-heading text-2xl leading-tight break-words">{title}</Dialog.Title>
-            {description && <div className="text-xs text-foreground/60">{description}</div>}
+            {description && <div className="text-[13px] text-foreground/65">{description}</div>}
             <Dialog.Close
               render={<Button variant="ghost" size="icon" className="absolute end-3 top-3 rounded-full" aria-label={t.detail.close} />}
             >

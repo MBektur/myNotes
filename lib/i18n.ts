@@ -148,6 +148,7 @@ export const t = {
     deadline: "مۇددەت",
     priority: "مۇھىملىق",
     title: "ماۋزۇ",
+    manual: "قولدا تەرتىپلەش",
   },
   deadlineFilter: {
     overdue: "مۇددىتى ئۆتكەن",

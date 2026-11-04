@@ -20,9 +20,9 @@ function Section({
 }: { title: string; icon: React.ReactNode; count?: React.ReactNode; children: React.ReactNode }) {
   return (
     <section className="space-y-2">
-      <h4 className="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-foreground/60 [&>svg]:size-3.5">
+      <h4 className="flex items-center gap-2 text-[15px] font-semibold text-foreground/80 [&>svg]:size-4">
         {icon} {title}
-        {count !== undefined && <span className="ms-auto rounded-full bg-muted px-2 py-px text-[11px] font-medium tabular-nums text-foreground/70">{count}</span>}
+        {count !== undefined && <span className="ms-auto rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium tabular-nums text-foreground/70">{count}</span>}
       </h4>
       {children}
     </section>
@@ -32,11 +32,11 @@ function Section({
 /** خاسلىق قۇرى: سول تەرەپتە ئىكون + ماۋزۇ، ئوڭ تەرەپتە قىممەت */
 function Prop({ label, icon, children }: { label: string; icon: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="grid grid-cols-[7rem_1fr] items-center gap-3 px-3.5 py-2.5">
-      <dt className="flex items-center gap-1.5 text-xs text-foreground/60 [&>svg]:size-3.5 [&>svg]:shrink-0">
+    <div className="grid grid-cols-[7.5rem_1fr] items-center gap-3 px-3.5 py-2.5">
+      <dt className="flex items-center gap-1.5 text-sm text-foreground/65 [&>svg]:size-4 [&>svg]:shrink-0">
         {icon} {label}
       </dt>
-      <dd className="flex min-w-0 flex-wrap items-center gap-1.5 text-sm">{children}</dd>
+      <dd className="flex min-w-0 flex-wrap items-center gap-1.5 text-[15px]">{children}</dd>
     </div>
   )
 }
@@ -85,7 +85,7 @@ function LinkPreview({ href, label }: { href: string; label?: string }) {
         {hasPreview ? (
           <>
             {og.title && <div className="line-clamp-2 text-sm font-medium">{og.title}</div>}
-            {og.description && <div className="line-clamp-2 text-xs text-muted-foreground">{og.description}</div>}
+            {og.description && <div className="line-clamp-2 text-[13px] text-muted-foreground">{og.description}</div>}
           </>
         ) : label ? (
           <div className="text-sm font-medium">{label}</div>
@@ -118,14 +118,14 @@ function PdfItem({ a }: { a: Attachment }) {
       <FileText className="size-5 shrink-0 text-red-500" />
       <div className="min-w-0 flex-1">
         <div dir="ltr" className="truncate text-sm text-start">{a.name}</div>
-        <div className="text-xs text-foreground/60">{kb} KB</div>
+        <div className="text-[13px] text-foreground/60">{kb} KB</div>
       </div>
       {url && (
         <a
           href={url}
           target="_blank"
           rel="noreferrer"
-          className="inline-flex h-7 items-center gap-1 rounded-lg border px-2.5 text-[0.8rem] font-medium hover:bg-muted"
+          className="inline-flex h-8 items-center gap-1 rounded-lg border px-3 text-sm font-medium hover:bg-muted"
         >
           <ExternalLink className="size-3.5" /> {t.detail.openFile}
         </a>
@@ -150,13 +150,13 @@ function Detail({ note }: { note: Note }) {
     <div className="min-h-full space-y-5 bg-muted/30 px-5 py-5 text-foreground">
       <dl className="divide-y overflow-hidden rounded-2xl border bg-background shadow-xs">
         <Prop label={t.status} icon={<Activity />}>
-          <span className={cn(`note-${sv.color} note-surface inline-flex items-center gap-1 rounded-full border border-foreground/10 px-2.5 py-0.5 text-xs font-medium`)}>
+          <span className={cn(`note-${sv.color} note-surface inline-flex items-center gap-1 rounded-full border border-foreground/10 px-3 py-1 text-[13px] font-medium`)}>
             <span aria-hidden>{sv.icon}</span> {t.statuses[note.status]}
           </span>
         </Prop>
         {note.priority && (
           <Prop label={t.priority} icon={<Flag />}>
-            <span className={cn("inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium", priorityStyle[note.priority])}>
+            <span className={cn("inline-flex items-center gap-1 rounded-full px-3 py-1 text-[13px] font-medium", priorityStyle[note.priority])}>
               <span aria-hidden>{PRIORITY_VISUAL[note.priority].icon}</span> {t.priorities[note.priority]}
             </span>
           </Prop>
@@ -165,7 +165,7 @@ function Detail({ note }: { note: Note }) {
           <Prop label={t.form.deadline} icon={<CalendarDays />}>
             <span className={cn("tabular-nums", overdue ? "font-medium text-red-600 dark:text-red-400" : "text-foreground/80")}>{note.deadline}</span>
             {rel && (
-              <span className={cn("rounded-full px-2 py-px text-[11px] font-medium", overdue ? "bg-red-500/15 text-red-600 dark:text-red-400" : "bg-muted text-foreground/70")}>
+              <span className={cn("rounded-full px-2.5 py-0.5 text-xs font-medium", overdue ? "bg-red-500/15 text-red-600 dark:text-red-400" : "bg-muted text-foreground/70")}>
                 {rel}
               </span>
             )}
@@ -276,16 +276,16 @@ export function NoteDetailPanel({
         shown &&
         sv && (
           <>
-            <span className={cn(`note-${sv.color} rounded-full border border-foreground/15 bg-white/60 px-2.5 py-0.5 text-xs font-medium dark:bg-white/10`)}>
+            <span className={cn(`note-${sv.color} rounded-full border border-foreground/15 bg-white/60 px-3 py-1 text-[13px] font-medium dark:bg-white/10`)}>
               <span aria-hidden>{sv.icon}</span> {t.statuses[shown.status]}
             </span>
             {shown.priority && (
-              <span className={cn("rounded-full px-2.5 py-0.5 text-xs font-medium", priorityStyle[shown.priority])}>
+              <span className={cn("rounded-full px-3 py-1 text-[13px] font-medium", priorityStyle[shown.priority])}>
                 {PRIORITY_VISUAL[shown.priority].icon} {t.priorities[shown.priority]}
               </span>
             )}
             {isOverdue(shown) && (
-              <span className="rounded-full bg-red-500/15 px-2.5 py-0.5 text-xs font-medium text-red-600 dark:text-red-400">
+              <span className="rounded-full bg-red-500/15 px-3 py-1 text-[13px] font-medium text-red-600 dark:text-red-400">
                 {t.deadlineFilter.overdue}
               </span>
             )}

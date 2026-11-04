@@ -30,7 +30,7 @@ const DEADLINE_VISUAL: Record<string, { icon: string; color: NoteColor }> = {
   none: { icon: "♾️", color: "teal" },
 }
 const SORT_ICON: Record<string, string> = {
-  updated: "🕒", created: "🆕", deadline: "📅", priority: "🔥", title: "🔤",
+  updated: "🕒", created: "🆕", deadline: "📅", priority: "🔥", title: "🔤", manual: "↕️",
 }
 
 const ALL = "all"

@@ -10,7 +10,7 @@ export type Filters = {
   deadline?: "overdue" | "week" | "none"
 }
 
-export type SortBy = "updated" | "deadline" | "priority" | "title"
+export type SortBy = "updated" | "deadline" | "priority" | "title" | "manual"
 
 export const emptyFilters: Filters = { query: "", statuses: [], categories: [], tags: [], priorities: [] }
 
@@ -82,6 +82,13 @@ export function sortNotes(notes: Note[], by: SortBy) {
       )
     case "title":
       return arr.sort((a, b) => (a.title ?? "").localeCompare(b.title ?? ""))
+    case "manual":
+      // Qolda sürüp tertiplengenler aldida; tertipsizler (yéngi xatire) axirida, yéngisi aldida
+      return arr.sort(
+        (a, b) =>
+          (a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER) ||
+          b.updatedAt.localeCompare(a.updatedAt)
+      )
   }
 }
 

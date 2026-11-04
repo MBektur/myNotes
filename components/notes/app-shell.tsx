@@ -19,7 +19,7 @@ import { t } from "@/lib/i18n"
 import { demoNotes } from "@/lib/demo"
 import { emptyFilters, filterNotes, isOverdue, sortNotes, type Filters, type SortBy } from "@/lib/filters"
 import { NotesProvider, useNotes } from "@/lib/notes-store"
-import { loadView, saveView } from "@/lib/storage"
+import { loadSort, loadView, saveSort, saveView } from "@/lib/storage"
 import type { Note, Status, ViewMode } from "@/lib/types"
 import { AppHeader } from "./app-header"
 import { AppSidebar } from "./app-sidebar"
@@ -60,7 +60,12 @@ function Inner({ children }: { children: React.ReactNode }) {
   const { doExport, doExportCsv, pickFile, ui: importUi } = useImportExport()
   const scheduleIo = useScheduleIo()
   const [filters, setFilters] = React.useState<Filters>(emptyFilters)
-  const [sortBy, setSortBy] = React.useState<SortBy>("priority")
+  const [sortOverride, setSortState] = React.useState<SortBy | null>(null)
+  const sortBy: SortBy = sortOverride ?? (hydrated ? loadSort() : "priority")
+  const setSortBy = (s: SortBy) => {
+    setSortState(s)
+    saveSort(s)
+  }
   const [viewOverride, setViewState] = React.useState<ViewMode | null>(null)
   const view: ViewMode = viewOverride ?? (hydrated ? loadView() : "kanban")
   const [target, setTarget] = React.useState<DialogTarget>(null)

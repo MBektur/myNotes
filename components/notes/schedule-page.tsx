@@ -174,19 +174,18 @@ export function SchedulePage() {
             ["week", t.schedule.viewWeek, <CalendarDays key="w" />],
             ["timetable", t.schedule.viewTimetable, <GraduationCap key="t" />],
           ] as const).map(([v, label, icon]) => (
-            <Hint key={v} label={label}>
-              <Button
-                variant={view === v ? "default" : "ghost"}
-                size="sm"
-                className="h-8 gap-1.5 rounded-xl px-2.5"
-                aria-label={label}
-                aria-pressed={view === v}
-                onClick={() => setView(v)}
-              >
-                {icon}
-                <span className="hidden sm:inline">{label}</span>
-              </Button>
-            </Hint>
+            <Button
+              key={v}
+              variant={view === v ? "default" : "ghost"}
+              size="sm"
+              className="h-8 gap-1.5 rounded-xl px-2.5"
+              aria-label={label}
+              aria-pressed={view === v}
+              onClick={() => setView(v)}
+            >
+              {icon}
+              <span className="hidden sm:inline">{label}</span>
+            </Button>
           ))}
         </div>
       </div>
