@@ -145,11 +145,11 @@ function relDate(deadline: string) {
 }
 
 export function DashboardView({
-  onEdit,
+  onOpen,
   onAdd,
   onShowNotes,
 }: {
-  onEdit: (n: Note) => void
+  onOpen: (n: Note) => void
   onAdd: () => void
   onShowNotes: () => void
 }) {
@@ -233,7 +233,7 @@ export function DashboardView({
                       onCheckedChange={(v) => move(n.id, v ? "done" : "todo")}
                       className="size-5 rounded-md data-checked:border-emerald-500 data-checked:bg-emerald-500"
                     />
-                    <button type="button" className="min-w-0 flex-1 truncate text-start" onClick={() => onEdit(n)}>
+                    <button type="button" className="min-w-0 flex-1 truncate text-start" onClick={() => onOpen(n)}>
                       {n.title || n.content?.slice(0, 40) || t.untitled}
                     </button>
                     {n.priority && (
@@ -276,7 +276,7 @@ export function DashboardView({
               {dayNotes.length === 0 && <li className="text-muted-foreground">{t.dashboard.noneOnDay}</li>}
               {dayNotes.map((n) => (
                 <li key={n.id}>
-                  <button type="button" className="w-full truncate text-start hover:underline" onClick={() => onEdit(n)}>
+                  <button type="button" className="w-full truncate text-start hover:underline" onClick={() => onOpen(n)}>
                     {n.title || n.content?.slice(0, 40) || t.untitled}
                   </button>
                 </li>
@@ -305,7 +305,7 @@ export function DashboardView({
             <ul className="space-y-3.5">
               {soon.map((n, i) => (
                 <li key={n.id}>
-                  <button type="button" onClick={() => onEdit(n)} className="flex w-full items-center gap-3 text-start">
+                  <button type="button" onClick={() => onOpen(n)} className="flex w-full items-center gap-3 text-start">
                     <span className={cn("flex size-9 shrink-0 items-center justify-center rounded-full text-base shadow-sm", reminderTones[i % reminderTones.length].bg)} aria-hidden>
                       {reminderTones[i % reminderTones.length].emoji}
                     </span>

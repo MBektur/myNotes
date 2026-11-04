@@ -10,7 +10,7 @@ import { useShell } from "./app-shell"
 
 export function DashboardPage() {
   const { notes, hydrated } = useNotes()
-  const { edit, add, loadDemo } = useShell()
+  const { open, add, loadDemo } = useShell()
   const router = useRouter()
   if (!hydrated)
     return (
@@ -29,7 +29,7 @@ export function DashboardPage() {
           <Button onClick={loadDemo}>{t.dashboard.loadDemoUi}</Button>
         </div>
       )}
-      <DashboardView onEdit={edit} onAdd={() => add()} onShowNotes={() => router.push("/notes")} />
+      <DashboardView onOpen={open} onAdd={() => add()} onShowNotes={() => router.push("/notes")} />
     </>
   )
 }
