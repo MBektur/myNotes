@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { ViewTransition } from "react"
+import dynamic from "next/dynamic"
 import { usePathname, useRouter } from "next/navigation"
 import { toast } from "sonner"
 import {
@@ -23,12 +24,15 @@ import { loadSort, loadView, saveSort, saveView } from "@/lib/storage"
 import type { Note, Status, ViewMode } from "@/lib/types"
 import { AppHeader } from "./app-header"
 import { AppSidebar } from "./app-sidebar"
-import { CommandSearch } from "./command-search"
 import { useImportExport } from "./import-export"
 import { useScheduleIo } from "./schedule-io"
 import { MobileBottomNav } from "./mobile-bottom-nav"
-import { NoteDetailPanel } from "./note-detail"
-import { NoteDialog, type DialogTarget } from "./note-dialog"
+import type { DialogTarget } from "./note-dialog"
+
+// Aghir, hemme sehipide kerek bolmaydighan bölekler: chéqilghanda yüklinidu (dastlepki JS kichik bolsun).
+const NoteDetailPanel = dynamic(() => import("./note-detail").then((m) => m.NoteDetailPanel), { ssr: false })
+const NoteDialog = dynamic(() => import("./note-dialog").then((m) => m.NoteDialog), { ssr: false })
+const CommandSearch = dynamic(() => import("./command-search").then((m) => m.CommandSearch), { ssr: false })
 
 type Shell = {
   filters: Filters

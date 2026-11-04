@@ -3,6 +3,8 @@
 import * as React from "react"
 import { defaultLessons, defaultPeople } from "./schedule-data"
 import { toast } from "sonner"
+import { readCache, writeCache } from "./cache"
+import { currentUserId } from "./supabase/client"
 import { t } from "./i18n"
 import type { ScheduleData } from "./schedule-csv"
 import { clearRemoteSchedule, fetchSchedule, pushSchedule } from "./schedule-repo"
@@ -29,9 +31,19 @@ function enqueue(job: () => Promise<void>) {
 }
 
 /** Kirgendin kéyin bir qétim: Supabase'tiki programni yüklep keshke qoyidu (bolmisa dessleptiki). */
+let uid: string | null = null
+
 export async function initSchedule() {
   try {
-    cache = (await fetchSchedule()) ?? DEFAULT
+    uid = await currentUserId()
+    const cached = readCache<ScheduleData>("schedule", uid)
+    if (cached) {
+      cache = cached
+      emit()
+    }
+    const remote = await fetchSchedule()
+    cache = remote ?? DEFAULT
+    writeCache("schedule", uid, remote)
     emit()
   } catch {
     toast.error(t.sync.failed)
@@ -40,12 +52,14 @@ export async function initSchedule() {
 
 export function saveSchedule(data: ScheduleData) {
   cache = data
+  if (uid) writeCache("schedule", uid, data)
   emit()
   enqueue(() => pushSchedule(data))
 }
 
 export function resetSchedule() {
   cache = DEFAULT
+  if (uid) writeCache("schedule", uid, null)
   emit()
   enqueue(clearRemoteSchedule)
 }

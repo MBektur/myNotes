@@ -7,6 +7,7 @@ import {
 import { CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, ListTodo, Plus, TriangleAlert } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Skeleton } from "@/components/ui/skeleton"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { cn } from "@/lib/utils"
@@ -287,7 +288,7 @@ export function CalendarPage() {
   }
   const years = Array.from({ length: 11 }, (_, i) => new Date().getFullYear() - 5 + i)
 
-  if (!hydrated) return null
+  if (!hydrated) return <Skeleton className="h-[28rem] rounded-2xl" />
 
   const weekStart = startOfWeek(cursor, { weekStartsOn: 1 })
   const label =

@@ -8,7 +8,7 @@ import "./globals.css"
 
 const vazirmatn = Vazirmatn({ variable: "--font-vazirmatn", subsets: ["arabic", "latin"] })
 // Lateef: yalnızca h1–h6 başlıkları için
-const lateef = Lateef({ variable: "--font-lateef", subsets: ["arabic", "latin"], weight: ["400", "500", "600", "700"] })
+const lateef = Lateef({ variable: "--font-lateef", subsets: ["arabic"], weight: ["500", "700"], preload: false })
 
 export const metadata: Metadata = {
   title: "myNotes",

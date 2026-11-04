@@ -7,7 +7,9 @@ import { t } from "./i18n"
 import { hasLegacyData, markMigrated, readLegacySchedule, uploadLegacyNotes } from "./migrate"
 import { deleteNotes, listNotes, rowToNote, upsertNotes } from "./notes-repo"
 import { saveSchedule } from "./schedule-store"
-import { supabase } from "./supabase/client"
+import type { RealtimeChannel } from "@supabase/supabase-js"
+import { readCache, writeCache } from "./cache"
+import { currentUserId, supabase } from "./supabase/client"
 import { newId, type Note, type Status } from "./types"
 import { ug } from "./ug"
 
@@ -156,53 +158,98 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
   const lastWrite = React.useRef(0)
   const queue = React.useRef<Promise<unknown>>(Promise.resolve())
 
+  const uidRef = React.useRef<string | null>(null)
+
+  // initial: aldi bilen keshtin (bolsa) tézla körsitip, andin Supabase'tin yéngilaydu.
   const load = React.useCallback(async (initial: boolean) => {
     try {
-      const remote = (await listNotes()).map(normalizeNote)
-      if (pending.current > 0) return // yézish dawamlishiwatidu: aldirimay yüklimeymiz
-      snapshot.current = new Map(remote.map((n) => [n.id, n]))
-      dispatch({ type: "hydrate", notes: remote })
+      if (initial) {
+        const uid = await currentUserId()
+        uidRef.current = uid
+        const cached = readCache<Note[]>("notes", uid)
+        if (cached) {
+          const local = cached.map(normalizeNote)
+          snapshot.current = new Map(local.map((n) => [n.id, n]))
+          dispatch({ type: "hydrate", notes: local })
+        }
+      }
+      const started = lastWrite.current
+      const fetched = (await listNotes()).map(normalizeNote)
+      // Yézish dawamlishiwatidu yaki sorash jeryanida yéngi yézish boldi: kone melumat bolushi mumkin, aldirimay yüklimeymiz
+      if (pending.current > 0 || lastWrite.current !== started) return
+      // Özgermigen xatirilarning obyéktini saqlaymiz (keraksiz qayta sizish bolmisun)
+      const prev = snapshot.current
+      const remote = fetched.map((n) => {
+        const old = prev.get(n.id)
+        return old && JSON.stringify(old) === JSON.stringify(n) ? old : n
+      })
+      const same = remote.length === prev.size && remote.every((n) => prev.get(n.id) === n)
+      if (!same || initial) {
+        snapshot.current = new Map(remote.map((n) => [n.id, n]))
+        dispatch({ type: "hydrate", notes: remote })
+      }
+      if (uidRef.current) writeCache("notes", uidRef.current, remote)
       if (initial && remote.length === 0 && hasLegacyData()) offerMigration(dispatch)
     } catch {
+      if (!initial) return // arqa pilanda yéngilash xatasi: jim
       toast.error(t.sync.loadFailed)
     }
   }, [])
 
   React.useEffect(() => {
-    void load(true)
-
+    let cancelled = false
+    let channel: RealtimeChannel | null = null
     const db = supabase()
-    const channel = db
-      .channel("notes-sync")
-      .on("postgres_changes", { event: "*", schema: "public", table: "notes" }, (p) => {
-        // Özimizning yézishimiz yaki yéqinqi yézishning "echo"si bolsa étibar bermeymiz
-        if (pending.current > 0 || Date.now() - lastWrite.current < 3000) return
-        if (p.eventType === "DELETE") {
-          const id = (p.old as { id?: string }).id
-          if (!id || !snapshot.current.has(id)) return
-          snapshot.current.delete(id)
-          dispatch({ type: "remoteRemove", id })
-          return
-        }
-        const note = normalizeNote(rowToNote(p.new))
-        const cur = snapshot.current.get(note.id)
-        if (cur && cur.updatedAt > note.updatedAt) return
-        if (cur && cur.updatedAt === note.updatedAt && cur.order === note.order && cur.status === note.status) return
-        snapshot.current.set(note.id, note)
-        dispatch({ type: "remoteUpsert", note })
-      })
-      .subscribe()
+    const idle = () => pending.current === 0 && Date.now() - lastWrite.current > 3000
 
+    // Realtime'ni birinchi yüklinishtin kéyin ulaymiz (ilk ötküzüsh kengliki tartishmisun)
+    void load(true).then(() => {
+      if (cancelled) return
+      channel = db
+        .channel("notes-sync")
+        .on("postgres_changes", { event: "*", schema: "public", table: "notes" }, (p) => {
+          // Özimizning yézishimiz yaki yéqinqi yézishning "echo"si bolsa étibar bermeymiz
+          if (!idle()) return
+          if (p.eventType === "DELETE") {
+            const id = (p.old as { id?: string }).id
+            if (!id || !snapshot.current.has(id)) return
+            snapshot.current.delete(id)
+            dispatch({ type: "remoteRemove", id })
+            return
+          }
+          const note = normalizeNote(rowToNote(p.new))
+          const cur = snapshot.current.get(note.id)
+          if (cur && cur.updatedAt > note.updatedAt) return
+          if (cur && cur.updatedAt === note.updatedAt && cur.order === note.order && cur.status === note.status) return
+          snapshot.current.set(note.id, note)
+          dispatch({ type: "remoteUpsert", note })
+        })
+        .subscribe((status) => {
+          if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") console.warn("[notes] realtime:", status)
+        })
+    })
+
+    // Ishenchlik üchün: Realtime ishlimisa (mes. jadwel yayinigha qoshulmighan) yaki üzülüp qalsa, körünüp turghan sehipide
+    // 15 sékuntta bir qétim arqa pilanda yéngilaymiz. Özgirish bolmisa UI qayta sizilmaydu.
+    const poll = window.setInterval(() => {
+      if (document.visibilityState === "visible" && idle()) void load(false)
+    }, 15000)
     const onVisible = () => {
-      if (document.visibilityState === "visible" && pending.current === 0 && Date.now() - lastWrite.current > 3000)
-        void load(false)
+      if (document.visibilityState === "visible" && idle()) void load(false)
     }
     document.addEventListener("visibilitychange", onVisible)
     return () => {
+      cancelled = true
+      window.clearInterval(poll)
       document.removeEventListener("visibilitychange", onVisible)
-      void db.removeChannel(channel)
+      if (channel) void db.removeChannel(channel)
     }
   }, [load])
+
+  // Keshni yéngi holet bilen yéngilap turimiz (kéyinki achilishta tézla körünsun)
+  React.useEffect(() => {
+    if (hydrated && uidRef.current) writeCache("notes", uidRef.current, notes)
+  }, [notes, hydrated])
 
   // Özgirishlerni (qoshush / yéngilash / öchürüsh) Supabase'ke yollash. Utuq yaki xata optimistik: UI aldin yéngilinidu.
   React.useEffect(() => {

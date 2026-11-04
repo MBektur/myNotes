@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
 import { t } from "@/lib/i18n"
 import { useNotes } from "@/lib/notes-store"
 import { DashboardView } from "./dashboard-view"
@@ -11,7 +12,14 @@ export function DashboardPage() {
   const { notes, hydrated } = useNotes()
   const { edit, add, loadDemo } = useShell()
   const router = useRouter()
-  if (!hydrated) return null
+  if (!hydrated)
+    return (
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {[0, 1, 2, 3].map((i) => (
+          <Skeleton key={i} className="h-28 rounded-2xl" />
+        ))}
+      </div>
+    )
   return (
     <>
       {notes.length === 0 && (
