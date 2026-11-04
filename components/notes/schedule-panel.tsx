@@ -3,7 +3,7 @@
 import * as React from "react"
 import { Car, Clock, MapPin, CalendarRange, CalendarX2, CalendarDays } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { SidePanel } from "@/components/ui/side-panel"
+import { SidePanel, panelBtn } from "@/components/ui/side-panel"
 import { cn } from "@/lib/utils"
 import { t } from "@/lib/i18n"
 import type { Lesson, Person } from "@/lib/schedule-data"
@@ -132,7 +132,7 @@ export function SchedulePanel({
       onOpenChange={(o) => !o && onClose()}
       badges={shown && <SubjectBadge subject={shown.lesson.subject} hue={hues.get(shown.lesson.subject)} className="text-xs" />}
       title={shown ? `${byId[shown.lesson.personId].name} · ${shown.lesson.subject}` : null}
-      footer={<Button type="button" variant="outline" size="sm" onClick={onClose}>{t.detail.close}</Button>}
+      footer={<Button type="button" variant="outline" className={panelBtn} onClick={onClose}>{t.detail.close}</Button>}
     >
       {body}
     </SidePanel>

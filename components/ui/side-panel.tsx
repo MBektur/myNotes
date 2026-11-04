@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button"
 import { t } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 
+/** Panel footer tugmilirining ortaq uslubi: chong, bosushqa qolay */
+export const panelBtn = "h-11 rounded-xl px-5 text-sm [&_svg:not([class*='size-'])]:size-4"
+
 const KEY = "mynotes:panel-width"
 const MIN_W = 360
 const DEFAULT_W = 480
@@ -93,7 +96,7 @@ export function SidePanel({
 
           <div className={cn("min-h-0 flex-1", scroll ? "overflow-y-auto" : "flex flex-col")}>{children}</div>
 
-          {footer && <div className="flex shrink-0 justify-end gap-2 border-t bg-muted/60 px-5 py-3">{footer}</div>}
+          {footer && <div className="flex shrink-0 justify-end gap-2.5 border-t bg-muted/60 px-5 py-4 max-sm:[&>button]:flex-1">{footer}</div>}
 
           {/* Kéngeytish tutqisi: panelning ichki (ong) chéti. Mobilda yoq. */}
           <div

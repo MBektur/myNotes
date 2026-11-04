@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { Checkbox } from "@/components/ui/checkbox"
-import { SidePanel } from "@/components/ui/side-panel"
+import { SidePanel, panelBtn } from "@/components/ui/side-panel"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -467,9 +467,9 @@ function NoteForm({
         </Field>
       </div>
 
-      <div className="flex shrink-0 justify-end gap-2 border-t bg-muted/60 px-5 py-3">
-        <Button type="submit">{t.form.save}</Button>
-        <Button type="button" variant="outline" onClick={onClose}>{t.form.cancel}</Button>
+      <div className="flex shrink-0 justify-end gap-2.5 border-t bg-muted/60 px-5 py-4 max-sm:[&>button]:flex-1">
+        <Button type="submit" className={panelBtn}>{t.form.save}</Button>
+        <Button type="button" variant="outline" className={panelBtn} onClick={onClose}>{t.form.cancel}</Button>
       </div>
     </form>
   )

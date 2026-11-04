@@ -6,7 +6,7 @@ import { Activity, AlignLeft, CalendarDays, CheckSquare, Flag, Hash, ExternalLin
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { SidePanel } from "@/components/ui/side-panel"
+import { SidePanel, panelBtn } from "@/components/ui/side-panel"
 import { cn } from "@/lib/utils"
 import { t } from "@/lib/i18n"
 import { useBlobUrl } from "@/lib/blobs"
@@ -304,13 +304,13 @@ export function NoteDetailPanel({
       footer={
         shown && (
           <>
-            <Button type="button" variant="ghost" size="sm" className="me-auto text-red-600 hover:bg-red-500/10 hover:text-red-600 dark:text-red-400" onClick={() => onDelete(shown)}>
+            <Button type="button" variant="ghost" className={cn(panelBtn, "me-auto text-red-600 hover:bg-red-500/10 hover:text-red-600 dark:text-red-400")} onClick={() => onDelete(shown)}>
               <Trash2 /> {t.actions.delete}
             </Button>
-            <Button type="button" size="sm" onClick={() => onEdit(shown)}>
+            <Button type="button" className={panelBtn} onClick={() => onEdit(shown)}>
               <Pencil /> {t.actions.edit}
             </Button>
-            <Button type="button" variant="outline" size="sm" onClick={onClose}>
+            <Button type="button" variant="outline" className={panelBtn} onClick={onClose}>
               <X /> {t.detail.close}
             </Button>
           </>

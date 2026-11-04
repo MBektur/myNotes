@@ -28,13 +28,13 @@ const isWeekend = (d: Date) => d.getDay() === 0 || d.getDay() === 6
 
 /* ---------- kichik bölekler ---------- */
 
-function Chip({ n, onEdit }: { n: Note; onEdit: (n: Note) => void }) {
+function Chip({ n, onOpen }: { n: Note; onOpen: (n: Note) => void }) {
   return (
     <button
       type="button"
       onClick={(e) => {
         e.stopPropagation()
-        onEdit(n)
+        onOpen(n)
       }}
       className={cn(
         `note-${noteColor(n)} note-surface block w-full truncate rounded-lg px-2 py-1 text-start text-xs shadow-sm`,
@@ -46,7 +46,7 @@ function Chip({ n, onEdit }: { n: Note; onEdit: (n: Note) => void }) {
   )
 }
 
-function NoteRow({ n, onEdit }: { n: Note; onEdit: (n: Note) => void }) {
+function NoteRow({ n, onOpen }: { n: Note; onOpen: (n: Note) => void }) {
   const { move } = useNotes()
   return (
     <div className={cn(`note-${noteColor(n)} note-surface flex items-center gap-3 rounded-2xl px-3 py-2.5 shadow-sm`)}>
@@ -55,7 +55,7 @@ function NoteRow({ n, onEdit }: { n: Note; onEdit: (n: Note) => void }) {
         onCheckedChange={(v) => move(n.id, v ? "done" : "todo")}
         className="size-5 border-foreground/30 bg-white/70 data-checked:border-emerald-500 data-checked:bg-emerald-500 data-checked:text-white dark:bg-white/10"
       />
-      <button type="button" onClick={() => onEdit(n)} className="min-w-0 flex-1 text-start">
+      <button type="button" onClick={() => onOpen(n)} className="min-w-0 flex-1 text-start">
         <span className={cn("block truncate text-sm font-regular", n.status === "done" && "line-through opacity-60")}>
           {title(n)}
         </span>
@@ -75,8 +75,8 @@ function NoteRow({ n, onEdit }: { n: Note; onEdit: (n: Note) => void }) {
 /* ---------- körünüshler ---------- */
 
 function MonthView({
-  cursor, byDay, onDay, onEdit,
-}: { cursor: Date; byDay: Map<string, Note[]>; onDay: (d: Date) => void; onEdit: (n: Note) => void }) {
+  cursor, byDay, onDay, onOpen,
+}: { cursor: Date; byDay: Map<string, Note[]>; onDay: (d: Date) => void; onOpen: (n: Note) => void }) {
   const start = startOfWeek(startOfMonth(cursor), { weekStartsOn: 1 })
   const days = Array.from({ length: 42 }, (_, i) => addDays(start, i))
   const today = todayStr()
@@ -121,7 +121,7 @@ function MonthView({
                 {d.getDate()}
               </span>
               <div className="hidden flex-col gap-1 sm:flex">
-                {list.slice(0, 3).map((n) => <Chip key={n.id} n={n} onEdit={onEdit} />)}
+                {list.slice(0, 3).map((n) => <Chip key={n.id} n={n} onOpen={onOpen} />)}
                 {list.length > 3 && <span className="text-[11px] text-muted-foreground">{t.calendar.more(list.length - 3)}</span>}
               </div>
               <div className="flex flex-wrap gap-0.5 sm:hidden">
@@ -138,8 +138,8 @@ function MonthView({
 }
 
 function WeekView({
-  cursor, byDay, onDay, onEdit, onAdd,
-}: { cursor: Date; byDay: Map<string, Note[]>; onDay: (d: Date) => void; onEdit: (n: Note) => void; onAdd: (d: Date) => void }) {
+  cursor, byDay, onDay, onOpen, onAdd,
+}: { cursor: Date; byDay: Map<string, Note[]>; onDay: (d: Date) => void; onOpen: (n: Note) => void; onAdd: (d: Date) => void }) {
   const start = startOfWeek(cursor, { weekStartsOn: 1 })
   const days = Array.from({ length: 7 }, (_, i) => addDays(start, i))
   const today = todayStr()
@@ -163,7 +163,7 @@ function WeekView({
               </header>
               <div className="flex min-h-16 flex-1 flex-col gap-1.5">
                 {list.length === 0 && <p className="py-2 text-xs text-muted-foreground">{t.calendar.noNotes}</p>}
-                {list.map((n) => <Chip key={n.id} n={n} onEdit={onEdit} />)}
+                {list.map((n) => <Chip key={n.id} n={n} onOpen={onOpen} />)}
               </div>
               <Button variant="outline" size="sm" className="rounded-xl" onClick={() => onDay(d)}>
                 {t.calendar.openDay}
@@ -183,8 +183,8 @@ function WeekView({
 }
 
 function DayView({
-  cursor, byDay, onEdit, onAdd, onShift,
-}: { cursor: Date; byDay: Map<string, Note[]>; onEdit: (n: Note) => void; onAdd: (d: Date) => void; onShift: (n: number) => void }) {
+  cursor, byDay, onOpen, onAdd, onShift,
+}: { cursor: Date; byDay: Map<string, Note[]>; onOpen: (n: Note) => void; onAdd: (d: Date) => void; onShift: (n: number) => void }) {
   const list = byDay.get(key(cursor)) ?? []
   const stats = [
     { label: t.calendar.noteCount, value: list.length, icon: ListTodo, tone: "clay-lilac" },
@@ -220,15 +220,15 @@ function DayView({
           <Button size="sm" className="rounded-xl" onClick={() => onAdd(cursor)}><Plus /> {t.calendar.addOnDay}</Button>
         </div>
         {list.length === 0 && <p className="py-6 text-center text-sm text-muted-foreground">{t.calendar.noNotes}</p>}
-        {list.map((n) => <NoteRow key={n.id} n={n} onEdit={onEdit} />)}
+        {list.map((n) => <NoteRow key={n.id} n={n} onOpen={onOpen} />)}
       </section>
     </div>
   )
 }
 
 function AgendaView({
-  cursor, byDay, onDay, onEdit,
-}: { cursor: Date; byDay: Map<string, Note[]>; onDay: (d: Date) => void; onEdit: (n: Note) => void }) {
+  cursor, byDay, onDay, onOpen,
+}: { cursor: Date; byDay: Map<string, Note[]>; onDay: (d: Date) => void; onOpen: (n: Note) => void }) {
   const first = startOfMonth(cursor)
   const last = endOfMonth(cursor)
   const days: Date[] = []
@@ -256,7 +256,7 @@ function AgendaView({
               <span className="text-xs text-muted-foreground">{t.calendar.notes(list.length)}</span>
             </button>
             <div className="my-3 me-4 ms-10 space-y-1.5 border-s-2 border-violet-200 ps-3 dark:border-violet-800">
-              {list.map((n) => <NoteRow key={n.id} n={n} onEdit={onEdit} />)}
+              {list.map((n) => <NoteRow key={n.id} n={n} onOpen={onOpen} />)}
             </div>
           </section>
         )
@@ -269,7 +269,7 @@ function AgendaView({
 
 export function CalendarPage() {
   const { notes, hydrated } = useNotes()
-  const { edit, add } = useShell()
+  const { open, add } = useShell()
   const [view, setView] = React.useState<View>("month")
   const [cursor, setCursor] = React.useState(() => new Date())
 
@@ -334,12 +334,12 @@ export function CalendarPage() {
         </span>
       </div>
 
-      {view === "month" && <MonthView cursor={cursor} byDay={byDay} onDay={goDay} onEdit={edit} />}
-      {view === "week" && <WeekView cursor={cursor} byDay={byDay} onDay={goDay} onEdit={edit} onAdd={(d) => add(undefined, key(d))} />}
+      {view === "month" && <MonthView cursor={cursor} byDay={byDay} onDay={goDay} onOpen={open} />}
+      {view === "week" && <WeekView cursor={cursor} byDay={byDay} onDay={goDay} onOpen={open} onAdd={(d) => add(undefined, key(d))} />}
       {view === "day" && (
-        <DayView cursor={cursor} byDay={byDay} onEdit={edit} onAdd={(d) => add(undefined, key(d))} onShift={(n) => setCursor((c) => addDays(c, n))} />
+        <DayView cursor={cursor} byDay={byDay} onOpen={open} onAdd={(d) => add(undefined, key(d))} onShift={(n) => setCursor((c) => addDays(c, n))} />
       )}
-      {view === "agenda" && <AgendaView cursor={cursor} byDay={byDay} onDay={goDay} onEdit={edit} />}
+      {view === "agenda" && <AgendaView cursor={cursor} byDay={byDay} onDay={goDay} onOpen={open} />}
     </>
   )
 }
