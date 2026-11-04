@@ -131,7 +131,7 @@ function Inner({ children }: { children: React.ReactNode }) {
             </ViewTransition>
           </div>
         </SidebarInset>
-        <MobileBottomNav onNew={() => add()} />
+        <MobileBottomNav />
 
         <NoteDetailPanel
           note={detail}

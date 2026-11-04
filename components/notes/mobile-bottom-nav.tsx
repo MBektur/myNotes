@@ -2,12 +2,11 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Plus } from "lucide-react"
 import { t } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 
-/** Mobilde (<md) astida qadalghan gézish: Panel · Xatire · [+] · Kalendar · Heqqide */
-export function MobileBottomNav({ onNew }: { onNew: () => void }) {
+/** Mobilde (<md) astida qadalghan gézish: Panel · Xatire · Kalendar · Jeduel · Heqqide */
+export function MobileBottomNav() {
   const pathname = usePathname()
 
   const items = [
@@ -38,20 +37,7 @@ export function MobileBottomNav({ onNew }: { onNew: () => void }) {
       aria-label="Main"
       className="clay fixed inset-x-0 bottom-0 z-40 flex items-center gap-1 rounded-b-none rounded-t-3xl px-3 pt-1.5 pb-[max(0.375rem,env(safe-area-inset-bottom))] md:hidden"
     >
-      {renderItem(items[0])}
-      {renderItem(items[1])}
-      <button
-        type="button"
-        onClick={onNew}
-        aria-label={t.newNote}
-        title={t.newNote}
-        className="-mt-6 flex size-14 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg ring-4 ring-background"
-      >
-        <Plus className="size-7" />
-      </button>
-      {renderItem(items[2])}
-      {renderItem(items[3])}
-      {renderItem(items[4])}
+      {items.map(renderItem)}
     </nav>
   )
 }

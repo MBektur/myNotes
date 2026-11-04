@@ -126,7 +126,16 @@
   }
   html {
     scrollbar-gutter: stable;
+    /* Qosh bosush bilen zoom bolushining aldini alidu */
+    touch-action: manipulation;
+    -webkit-text-size-adjust: 100%;
     @apply font-sans;
+  }
+  /* iOS Safari: input yazi olchimi 16px din kichik bolsa fokusta sehipe aptomatik zoom bolidu */
+  @media (max-width: 767px) {
+    input, textarea, select, [contenteditable="true"] {
+      font-size: 16px !important;
+    }
   }
   /* Bashliqlar: Lateef (Naskh) — kichik körünidighanliqi üchün azraq chong */
   h1, h2, h3, h4, h5, h6 {

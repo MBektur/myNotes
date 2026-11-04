@@ -16,7 +16,8 @@ export const metadata: Metadata = {
   appleWebApp: { capable: true, title: "myNotes", statusBarStyle: "default" },
 }
 
-export const viewport: Viewport = { width: "device-width", initialScale: 1, viewportFit: "cover" }
+// Mobilda zoom (pinch / input fokusi) cheklengen
+export const viewport: Viewport = { width: "device-width", initialScale: 1, maximumScale: 1, userScalable: false, viewportFit: "cover" }
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
