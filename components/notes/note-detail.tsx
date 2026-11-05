@@ -1,5 +1,6 @@
 "use client"
 
+import { Paragraphs } from "./paragraphs"
 import * as React from "react"
 import { format, differenceInCalendarDays, parseISO } from "date-fns"
 import { Activity, AlignLeft, CalendarDays, CheckSquare, Flag, Hash, ExternalLink, FileText, Folder, ImageIcon, Link2, Palette, Pencil, Trash2, X } from "lucide-react"
@@ -236,7 +237,7 @@ function Detail({ note }: { note: Note }) {
       {note.content && (
         <Section title={t.form.content} icon={<AlignLeft />}>
           <div className="rounded-2xl border bg-background p-4 shadow-xs">
-            <p className="text-sm leading-7 break-words whitespace-pre-line">{note.content}</p>
+            <Paragraphs text={note.content} className="text-sm leading-7 break-words" />
           </div>
         </Section>
       )}

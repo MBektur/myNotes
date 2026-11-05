@@ -20,11 +20,11 @@ function readWidth() {
   try {
     const v = Number(localStorage.getItem(KEY))
     if (v >= MIN_W) return v
-  } catch {}
+  } catch { }
   return DEFAULT_W
 }
 function saveWidth(v: number) {
-  try { localStorage.setItem(KEY, String(Math.round(v))) } catch {}
+  try { localStorage.setItem(KEY, String(Math.round(v))) } catch { }
 }
 
 /**

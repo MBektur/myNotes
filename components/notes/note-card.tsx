@@ -1,5 +1,6 @@
 "use client"
 
+import { Paragraphs } from "./paragraphs"
 import * as React from "react"
 import { CalendarDays, Eye, Link2, Paperclip, MoreVertical, Pencil, Trash2, ArrowRightLeft } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
@@ -119,7 +120,7 @@ export function NoteCard({
   const { toggleChecklist, update } = useNotes()
   const { open } = useShell()
   const [titleRef, titleClamped] = useClamped<HTMLHeadingElement>(note.title)
-  const [bodyRef, bodyClamped] = useClamped<HTMLParagraphElement>(note.content)
+  const [bodyRef, bodyClamped] = useClamped<HTMLSpanElement>(note.content)
   const current = noteColor(note)
   const progress = progressOf(note)
   const overdue = isOverdue(note)
@@ -159,9 +160,7 @@ export function NoteCard({
           {note.title || (note.content ? "" : t.untitled)}
         </h3>
         {note.content && (
-          <p ref={bodyRef} className="mt-1 line-clamp-3 text-sm break-words whitespace-pre-line text-foreground/70">
-            {note.content}
-          </p>
+          <Paragraphs ref={bodyRef} text={note.content} className="mt-1 line-clamp-3 text-sm break-words text-foreground/70" />
         )}
       </button>
       {(titleClamped || bodyClamped) && (

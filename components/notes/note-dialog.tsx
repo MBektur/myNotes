@@ -1,5 +1,6 @@
 "use client"
 
+import { paragraphAt, paragraphDir } from "@/lib/bidi"
 import * as React from "react"
 import { format, parseISO } from "date-fns"
 import { AlignLeft, Check, CalendarDays, CheckSquare, FileText, Flag, Folder, Hash, Link2, Paperclip, Palette, Plus, Type, X, Activity } from "lucide-react"
@@ -110,6 +111,7 @@ function NoteForm({
   const n = target.note
   const [title, setTitle] = React.useState(n?.title ?? "")
   const [content, setContent] = React.useState(n?.content ?? "")
+  const [caret, setCaret] = React.useState(0)
   const [category, setCategory] = React.useState(n?.category ?? "")
   const [tags, setTags] = React.useState<string[]>(n?.tags ?? [])
   const [tagInput, setTagInput] = React.useState("")
@@ -211,7 +213,14 @@ function NoteForm({
           <Input value={title} onChange={(e) => setTitle(ug(e.target.value))} autoFocus />
         </Field>
         <Field label={t.form.content} icon={<AlignLeft />}>
-          <Textarea value={content} onChange={(e) => setContent(ug(e.target.value))} rows={4} />
+          <Textarea
+            value={content}
+            dir={paragraphDir(paragraphAt(content, caret))}
+            className="text-start"
+            onChange={(e) => { setContent(ug(e.target.value)); setCaret(e.currentTarget.selectionStart) }}
+            onSelect={(e) => setCaret(e.currentTarget.selectionStart)}
+            rows={4}
+          />
         </Field>
 
         <div className="grid gap-4 sm:grid-cols-2">
