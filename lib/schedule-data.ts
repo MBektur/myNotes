@@ -41,7 +41,7 @@ export const SCHEDULE_START_HOUR = 8
 export const SCHEDULE_END_HOUR = 21
 
 export const defaultPeople: Person[] = [
-  { id: "muhsine", name: "مۇخسىنە", color: "pink", avail: {}, travelMin: 15 },
+  { id: "muhsine", name: "مۇھسىنە", color: "pink", avail: {}, travelMin: 15 },
   { id: "ehsan", name: "ئېھسان بەگ", color: "blue", avail: {}, travelMin: 15 },
   { id: "mahmud", name: "مەھمۇد", color: "green", avail: {}, travelMin: 15 },
   { id: "musajan", name: "مۇساجان", color: "orange", avail: {}, travelMin: 15 },
@@ -94,9 +94,8 @@ export const defaultLessons: Lesson[] = [
   { id: "l45", personId: "mahmud", day: 1, start: "14:00", end: "18:00", subject: "ئىنگلىز تىلى", from: "2026-10-05", to: "2027-01-17", flexible: true },
   { id: "l46", personId: "mahmud", day: 2, start: "14:00", end: "18:00", subject: "ئىنگلىز تىلى", from: "2026-10-05", to: "2027-01-17", flexible: true },
   { id: "l47", personId: "mahmud", day: 3, start: "14:00", end: "18:00", subject: "ئىنگلىز تىلى", from: "2026-10-05", to: "2027-01-17", flexible: true },
-  { id: "l48", personId: "mahmud", day: 4, start: "18:00", end: "21:00", subject: "ئىنگلىز تىلى", from: "2026-10-15", to: "2027-01-17", flexible: true },
+  { id: "l48", personId: "mahmud", day: 4, start: "14:00", end: "18:00", subject: "ئىنگلىز تىلى", from: "2026-10-05", to: "2027-01-17", flexible: true },
   { id: "l49", personId: "mahmud", day: 5, start: "14:00", end: "18:00", subject: "ئىنگلىز تىلى", from: "2026-10-05", to: "2027-01-17", flexible: true },
-  { id: "l50", personId: "mahmud", day: 6, start: "16:00", end: "18:00", subject: "ئىنگلىز تىلى", from: "2026-10-05", to: "2027-01-17", flexible: true },
   { id: "l51", personId: "teacher", day: 2, start: "08:30", end: "11:29", subject: "Generat. of Electrical Energy", from: "2026-10-05", to: "2027-01-17", note: "ELK 421E · Ayazağa, EEB · 5307" },
   { id: "l52", personId: "teacher", day: 2, start: "12:30", end: "15:29", subject: "Illumination Techniques", from: "2026-10-05", to: "2027-01-17", note: "ELK 307E · Ayazağa, EEB · 5203" },
   { id: "l53", personId: "teacher", day: 3, start: "08:30", end: "11:29", subject: "Electromech. Energy Conversion", from: "2026-10-05", to: "2027-01-17", note: "ELK 343E · Ayazağa, EEB · 2102" },

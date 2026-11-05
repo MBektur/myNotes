@@ -77,6 +77,55 @@ export function layoutLanes<T extends { start: string; end: string }>(items: T[]
   return res
 }
 
+/**
+ * layoutLanes bilen oxshash, lékin her kishi (key) kün ichide hemishe oxshash lane'ni igileydu (kishi tertipi = order).
+ * Chüshüshmigen derslar toluq kenglikte qalidu; chüshüshse, kishi öz lane'ide turidu (bosh lane'lar qalidu).
+ */
+export function layoutLanesByKey<T extends { start: string; end: string }>(
+  items: T[],
+  keyOf: (item: T) => string,
+  order: string[]
+) {
+  const sorted = [...items].sort((a, b) => toMin(a.start) - toMin(b.start) || toMin(b.end) - toMin(a.end))
+  // 1) Chüshüshken guruplar
+  const groups: T[][] = []
+  let end = -1
+  for (const item of sorted) {
+    if (toMin(item.start) >= end) groups.push([])
+    groups[groups.length - 1].push(item)
+    end = Math.max(end, toMin(item.end))
+  }
+  // 2) Her kishi öz ichide chüshüshse ichki lane (sub)
+  const sub = new Map<T, number>()
+  const width = new Map<string, number>()
+  for (const g of groups) {
+    const ends = new Map<string, number[]>()
+    for (const item of g) {
+      const k = keyOf(item)
+      const arr = ends.get(k) ?? []
+      let i = arr.findIndex((e) => e <= toMin(item.start))
+      if (i === -1) i = arr.length
+      arr[i] = toMin(item.end)
+      ends.set(k, arr)
+      sub.set(item, i)
+      width.set(k, Math.max(width.get(k) ?? 1, i + 1))
+    }
+  }
+  // 3) Kün boyiche pozitsiye: kishi tertipi boyiche
+  const keys = [...width.keys()].sort((a, b) => order.indexOf(a) - order.indexOf(b))
+  const offset = new Map<string, number>()
+  let total = 0
+  for (const k of keys) { offset.set(k, total); total += width.get(k)! }
+  // 4) Guruppining lanes = uning eng ong lane'i + 1
+  const res: { item: T; lane: number; lanes: number }[] = []
+  for (const g of groups) {
+    const placed = g.map((item) => ({ item, lane: g.length === 1 ? 0 : offset.get(keyOf(item))! + sub.get(item)! }))
+    const lanes = g.length === 1 ? 1 : Math.max(...placed.map((p) => p.lane)) + 1
+    placed.forEach((p) => res.push({ ...p, lanes }))
+  }
+  return res
+}
+
 /** Muayyen bir kün (yyyy-MM-dd, weekday) üchün derslerni qayturidu */
 export function lessonsOn(lessons: Lesson[], dateKey: string, weekday: number): Lesson[] {
   return lessons.filter(

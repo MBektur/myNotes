@@ -12,7 +12,7 @@ import { SchedulePanel } from "./schedule-panel"
 import { ScheduleTimetable } from "./schedule-timetable"
 import { SubjectBadge } from "./subject-badge"
 import { loadScheduleUi, saveScheduleUi, useSchedule, type ScheduleView } from "@/lib/schedule-store"
-import { intersect, layoutLanes, lessonsOn, slotsToRanges, subjectHues, subtract, toMin, type Range } from "@/lib/schedule"
+import { intersect, layoutLanesByKey, lessonsOn, slotsToRanges, subjectHues, subtract, toMin, type Range } from "@/lib/schedule"
 
 const HOUR_PX = 56
 const START_MIN = SCHEDULE_START_HOUR * 60
@@ -286,7 +286,7 @@ export function SchedulePage() {
                         style={{ top: top(a), height: height(a, b) }}
                       />
                     ))}
-                    {layoutLanes(d.shown).map(({ item: l, lane, lanes }) => {
+                    {layoutLanesByKey(d.shown, (l) => l.personId, Object.keys(byId)).map(({ item: l, lane, lanes }) => {
                       const p = byId[l.personId]
                       const a = toMin(l.start)
                       const b = toMin(l.end)

@@ -35,7 +35,7 @@ export function NotesPage() {
           <p className="text-sm text-muted-foreground">{t.emptyHint}</p>
         </div>
       ) : view === "card" ? (
-        <CardView notes={visible} onEdit={edit} onDelete={askDelete} />
+        <CardView notes={visible} onEdit={edit} onDelete={askDelete} onReorder={() => setSortBy("manual")} />
       ) : (
         <ListView notes={visible} onEdit={edit} onDelete={askDelete} />
       )}

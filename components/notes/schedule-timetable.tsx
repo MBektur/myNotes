@@ -5,7 +5,7 @@ import { Car, Clock } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { t } from "@/lib/i18n"
 import { DEFAULT_TRAVEL_MIN, type Lesson, type Person } from "@/lib/schedule-data"
-import { fromMin, layoutLanes, toMin } from "@/lib/schedule"
+import { fromMin, layoutLanesByKey, toMin } from "@/lib/schedule"
 import { SubjectBadge } from "./subject-badge"
 
 const HOUR_PX = 64
@@ -56,6 +56,7 @@ export function ScheduleTimetable({
   selectedKey: string | null
   onSelect: (lessonId: string, date: string) => void
 }) {
+  const personOrder = Object.keys(byId)
   const perDay = days.map((d) => ({ ...d, items: buildItems(d.shown, byId) }))
   const all = perDay.flatMap((d) => d.items)
   const lo = all.length ? Math.min(...all.map((i) => toMin(i.start))) : DEFAULT_RANGE[0]
@@ -103,7 +104,7 @@ export function ScheduleTimetable({
                 {hours.map((h) => (
                   <div key={h} className="absolute inset-x-0 border-t border-border/50" style={{ top: (h - startH) * HOUR_PX }} />
                 ))}
-                {layoutLanes(d.items).map(({ item: it, lane, lanes }) => {
+                {layoutLanesByKey(d.items, (i) => i.person.id, personOrder).map(({ item: it, lane, lanes }) => {
                   const l = it.lesson
                   const a = toMin(it.start)
                   const b = toMin(it.end)

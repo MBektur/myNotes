@@ -119,7 +119,7 @@ export function SidePanel({
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Backdrop className="fixed inset-0 z-50 bg-black/20 transition-opacity duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0 supports-backdrop-filter:backdrop-blur-[3px]" />
+        <Dialog.Backdrop className="fixed inset-0 z-50 bg-black/20 transition-opacity duration-500 data-ending-style:opacity-0 data-starting-style:opacity-0 supports-backdrop-filter:backdrop-blur-[3px]" />
         <Dialog.Popup
           ref={popupRef}
           onPointerDown={swipeStart}
@@ -130,7 +130,7 @@ export function SidePanel({
           style={{ "--panel-w": `${width}px` } as React.CSSProperties}
           className={cn(
             "fixed inset-y-0 left-0 z-50 flex h-full w-[min(var(--panel-w),90vw)] touch-pan-y flex-col bg-popover text-popover-foreground shadow-2xl outline-none max-sm:w-full",
-            "border-e transition duration-200 ease-out data-ending-style:-translate-x-8 data-ending-style:opacity-0 data-starting-style:-translate-x-8 data-starting-style:opacity-0"
+            "border-e transition duration-500 ease-out data-ending-style:-translate-x-full data-starting-style:-translate-x-full"
           )}
         >
           <header className={cn("relative shrink-0 space-y-2 border-b px-5 pt-5 pb-4 pe-14", headerClassName)}>
