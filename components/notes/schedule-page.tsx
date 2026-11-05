@@ -257,7 +257,7 @@ export function SchedulePage() {
               return (
                 <div
                   key={d.wd}
-                  className={cn("min-w-0 border-s border-border/60", i % 2 === 1 && "bg-muted/50", activeMobile !== d.wd && "hidden md:block")}
+                  className={cn("min-w-0 border-s-2 border-border", i % 2 === 1 && "bg-muted/50", activeMobile !== d.wd && "hidden md:block")}
                 >
                   <div className={cn("flex h-14 flex-col items-center justify-center", isToday && "text-primary")}>
                     <span className="text-xs">{t.calendar.weekdays[d.wd]}</span>
