@@ -102,7 +102,9 @@ export function ScheduleTimetable({
               </div>
               <div className={cn("relative", isToday && "bg-primary/5")} style={{ height: bodyPx }}>
                 {hours.map((h) => (
-                  <div key={h} className="absolute inset-x-0 border-t border-border/50" style={{ top: (h - startH) * HOUR_PX }} />
+                  <div key={h} className="pointer-events-none absolute inset-x-0 border-t border-border/50" style={{ top: (h - startH) * HOUR_PX }}>
+                    <span className="px-1 text-[10px] leading-none text-muted-foreground/50 tabular-nums">{String(h).padStart(2, "0")}:00</span>
+                  </div>
                 ))}
                 {layoutLanesByKey(d.items, (i) => i.person.id, personOrder).map(({ item: it, lane, lanes }) => {
                   const l = it.lesson

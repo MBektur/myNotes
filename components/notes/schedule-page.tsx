@@ -274,9 +274,13 @@ export function SchedulePage() {
                     {hours.slice(0, -1).map((h) => (
                       <div
                         key={h}
-                        className="absolute inset-x-0 border-t border-border/50"
+                        className="pointer-events-none absolute inset-x-0 border-t border-border/50"
                         style={{ top: (h - SCHEDULE_START_HOUR) * HOUR_PX }}
-                      />
+                      >
+                        <span className="px-1 text-[10px] leading-none text-muted-foreground/50 tabular-nums">
+                          {String(h).padStart(2, "0")}:00
+                        </span>
+                      </div>
                     ))}
                     {d.free.map(([a, b]) => (
                       <div
@@ -312,15 +316,13 @@ export function SchedulePage() {
                         >
                           {l.flexible && <span aria-hidden className="hatch pointer-events-none absolute inset-0" />}
                           <span className="relative block truncate font-medium">{p.name}</span>
-                          {h >= 38 && <SubjectBadge subject={l.subject} hue={hues.get(l.subject)} className="relative mt-0.5" />}
+                          <span className="relative block truncate opacity-70 tabular-nums">
+                            {l.flexible && "~ "}{l.start}–{l.end}
+                          </span>
+                          {h >= 52 && <SubjectBadge subject={l.subject} hue={hues.get(l.subject)} className="relative mt-0.5" />}
                           {l.flexible && h >= 52 && (
                             <span className="relative mt-0.5 block w-fit max-w-full truncate rounded-md bg-foreground/80 px-1.5 py-px text-[10px] font-medium text-background">
                               ~ {t.schedule.flexibleTag}
-                            </span>
-                          )}
-                          {h >= (l.flexible ? 70 : 52) && (
-                            <span className="relative block truncate opacity-60 tabular-nums">
-                              {l.flexible && "~ "}{l.start}–{l.end}
                             </span>
                           )}
                         </button>
