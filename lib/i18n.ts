@@ -139,6 +139,7 @@ export const t = {
   editNote: "خاتىرىنى تەھرىرلەش",
   notes: "خاتىرىلەر",
   categories: "كاتېگورىيەلەر",
+  workspaces: "ئىش بوشلۇقى",
   hashtags: "خەتكۈچلەر",
   noCategories: "كاتېگورىيە يوق",
   noTags: "ھاشتېگ يوق",
@@ -188,6 +189,18 @@ export const t = {
     categoryAdd: "قوشۇش",
     noCategories: "تېخى كاتېگورىيە يوق",
     categoryNew: "يېڭى كاتېگورىيە يېزىڭ",
+    workspace: "ئىش بوشلۇقى",
+    noWorkspaces: "تېخى ئىش بوشلۇقى يوق",
+    workspaceNew: "يېڭى",
+    workspaceName: "ئىش بوشلۇقى نامى",
+    workspaceEmoji: "ئىموجى",
+    workspaceEdit: "ئىش بوشلۇقىنى تەھرىرلەش",
+    workspaceDelete: "ئۆچۈرۈش",
+    workspaceDeleteTitle: "ئىش بوشلۇقى ئۆچۈرۈلسۇنمۇ؟",
+    workspaceDeleteDesc: (n: number) =>
+      n > 0
+        ? `ئىچىدىكى ${n} خاتىرە ئۆچمەيدۇ، پەقەت ئىش بوشلۇقىسىز قالىدۇ.`
+        : "بۇ ئىش بوشلۇقىدا خاتىرە يوق.",
     tags: "خەتكۈچلەر",
     tagsHint: "يېزىپ Enter بېسىڭ",
     deadline: "مۇددەت",

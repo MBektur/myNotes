@@ -4,6 +4,7 @@ import { PRIORITIES, type Note, type Priority, type Status } from "./types"
 export type Filters = {
   query: string
   statuses: Status[]
+  workspaces: string[]
   categories: string[]
   tags: string[]
   priorities: Priority[]
@@ -12,7 +13,7 @@ export type Filters = {
 
 export type SortBy = "updated" | "deadline" | "priority" | "title" | "manual"
 
-export const emptyFilters: Filters = { query: "", statuses: [], categories: [], tags: [], priorities: [] }
+export const emptyFilters: Filters = { query: "", statuses: [], workspaces: [], categories: [], tags: [], priorities: [] }
 
 export function todayStr(d = new Date()) {
   const m = String(d.getMonth() + 1).padStart(2, "0")
@@ -24,8 +25,9 @@ export function isOverdue(n: Note) {
   return !!n.deadline && n.status !== "done" && n.deadline < todayStr()
 }
 
-function haystack(n: Note) {
+function haystack(n: Note, wsName?: string) {
   return [
+    wsName,
     n.title,
     n.content,
     n.category,
@@ -38,15 +40,17 @@ function haystack(n: Note) {
     .toLowerCase()
 }
 
-export function searchNotes(notes: Note[], query: string) {
+/** wsNames: workspace id -> ad (izdeshte workspace nami hem tépilsun) */
+export function searchNotes(notes: Note[], query: string, wsNames?: ReadonlyMap<string, string>) {
   const q = ug(query.trim().toLowerCase().replace(/^#/, ""))
   if (!q) return notes
-  return notes.filter((n) => haystack(n).includes(q))
+  return notes.filter((n) => haystack(n, n.workspaceId ? wsNames?.get(n.workspaceId) : undefined).includes(q))
 }
 
-export function filterNotes(notes: Note[], f: Filters) {
-  let out = searchNotes(notes, f.query)
+export function filterNotes(notes: Note[], f: Filters, wsNames?: ReadonlyMap<string, string>) {
+  let out = searchNotes(notes, f.query, wsNames)
   if (f.statuses.length) out = out.filter((n) => f.statuses.includes(n.status))
+  if (f.workspaces.length) out = out.filter((n) => !!n.workspaceId && f.workspaces.includes(n.workspaceId))
   if (f.categories.length) out = out.filter((n) => !!n.category && f.categories.includes(n.category))
   if (f.tags.length) out = out.filter((n) => f.tags.every((t) => n.tags.includes(t)))
   if (f.priorities.length) out = out.filter((n) => !!n.priority && f.priorities.includes(n.priority))
@@ -93,7 +97,7 @@ export function sortNotes(notes: Note[], by: SortBy) {
 }
 
 export function hasActiveFilters(f: Filters) {
-  return !!(f.query || f.statuses.length || f.categories.length || f.tags.length || f.priorities.length || f.deadline)
+  return !!(f.query || f.statuses.length || f.workspaces.length || f.categories.length || f.tags.length || f.priorities.length || f.deadline)
 }
 
 export function progressOf(n: Note) {

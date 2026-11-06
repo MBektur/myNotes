@@ -8,6 +8,7 @@ import { isOverdue, progressOf } from "@/lib/filters"
 import { noteColor, type Note } from "@/lib/types"
 import { useShell } from "./app-shell"
 import { NoteMenu, openOnClick, priorityStyle } from "./note-card"
+import { WorkspaceBadge } from "./workspace-badge"
 
 export function ListView({
   notes,
@@ -38,6 +39,7 @@ export function ListView({
                 {n.title || n.content?.slice(0, 80) || t.untitled}
               </span>
               <span className="flex flex-wrap items-center gap-1.5 text-xs">
+                <WorkspaceBadge id={n.workspaceId} variant="outline" />
                 {n.category && <Badge variant="outline">{n.category}</Badge>}
                 {n.tags.map((tag) => (
                   <Badge key={tag} variant="secondary">#{tag}</Badge>

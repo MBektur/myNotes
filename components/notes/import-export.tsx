@@ -12,25 +12,38 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import { exportCsv } from "@/lib/csv"
-import { exportJson, parseImport } from "@/lib/export"
+import { exportJson, parseImport, type ImportData } from "@/lib/export"
 import { t } from "@/lib/i18n"
 import { useNotes } from "@/lib/notes-store"
-import type { Note } from "@/lib/types"
+import { ensureWorkspacesByName, mergeWorkspaces, useWorkspaces } from "@/lib/workspaces-store"
 
 export function useImportExport() {
   const { notes, importMerge, importReplace } = useNotes()
+  const workspaces = useWorkspaces()
   const inputRef = React.useRef<HTMLInputElement>(null)
-  const [pending, setPending] = React.useState<Note[] | null>(null)
+  const [pending, setPending] = React.useState<ImportData | null>(null)
 
   const doExport = React.useCallback(() => {
-    exportJson(notes)
+    exportJson(notes, workspaces)
     toast.success(t.io.exported)
-  }, [notes])
+  }, [notes, workspaces])
 
   const doExportCsv = React.useCallback(() => {
-    exportCsv(notes)
+    exportCsv(notes, workspaces)
     toast.success(t.io.exportedCsv)
-  }, [notes])
+  }, [notes, workspaces])
+
+  /** Workspace'lerni store'gha qoshup, xatirilerning workspaceId'sini toghrilaydu (nam -> id; tonush bolmighan id boshitilidu). */
+  const prepare = React.useCallback((data: ImportData) => {
+    mergeWorkspaces(data.workspaces)
+    const byName = data.noteWorkspace?.size ? ensureWorkspacesByName([...data.noteWorkspace.values()]) : null
+    const known = new Set([...workspaces.map((w) => w.id), ...data.workspaces.map((w) => w.id)])
+    return data.notes.map((n) => {
+      const csvName = data.noteWorkspace?.get(n.id)
+      const workspaceId = csvName ? byName?.get(csvName) : n.workspaceId && known.has(n.workspaceId) ? n.workspaceId : undefined
+      return { ...n, workspaceId }
+    })
+  }, [workspaces])
 
   const pickFile = React.useCallback(() => inputRef.current?.click(), [])
 
@@ -54,7 +67,7 @@ export function useImportExport() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t.io.importTitle}</AlertDialogTitle>
-            <AlertDialogDescription>{t.io.importDesc(pending?.length ?? 0)}</AlertDialogDescription>
+            <AlertDialogDescription>{t.io.importDesc(pending?.notes.length ?? 0)}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <Button variant="outline" onClick={() => setPending(null)}>{t.form.cancel}</Button>
@@ -62,8 +75,8 @@ export function useImportExport() {
               variant="outline"
               onClick={() => {
                 if (pending) {
-                  importReplace(pending)
-                  toast.success(t.io.imported(pending.length))
+                  importReplace(prepare(pending))
+                  toast.success(t.io.imported(pending.notes.length))
                 }
                 setPending(null)
               }}
@@ -73,8 +86,8 @@ export function useImportExport() {
             <Button
               onClick={() => {
                 if (pending) {
-                  importMerge(pending)
-                  toast.success(t.io.imported(pending.length))
+                  importMerge(prepare(pending))
+                  toast.success(t.io.imported(pending.notes.length))
                 }
                 setPending(null)
               }}

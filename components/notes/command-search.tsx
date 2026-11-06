@@ -14,6 +14,7 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { t } from "@/lib/i18n"
 import type { Note, ViewMode } from "@/lib/types"
+import { useWorkspaces } from "@/lib/workspaces-store"
 
 export function CommandSearch({
   open,
@@ -34,6 +35,8 @@ export function CommandSearch({
   onExport: () => void
   onExportCsv: () => void
 }) {
+  const workspaces = useWorkspaces()
+  const wsName = React.useMemo(() => new Map(workspaces.map((w) => [w.id, w.name])), [workspaces])
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key.toLowerCase() === "k" && (e.metaKey || e.ctrlKey)) {
@@ -81,6 +84,7 @@ export function CommandSearch({
                   keywords={[
                     n.title ?? "",
                     n.content ?? "",
+                    wsName.get(n.workspaceId ?? "") ?? "",
                     n.category ?? "",
                     ...n.tags,
                     ...n.links.flatMap((l) => [l.url, l.label ?? ""]),

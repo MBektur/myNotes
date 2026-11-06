@@ -3,6 +3,7 @@
 import * as React from "react"
 import { clearUserCache, isSupabaseConfigured, supabase } from "@/lib/supabase/client"
 import { initSchedule } from "@/lib/schedule-store"
+import { initWorkspaces } from "@/lib/workspaces-store"
 import { clearCaches } from "@/lib/cache"
 import { LoginScreen } from "./login-screen"
 import { Splash } from "./splash"
@@ -28,7 +29,10 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   }, [])
 
   React.useEffect(() => {
-    if (state === "in") void initSchedule()
+    if (state === "in") {
+      void initSchedule()
+      void initWorkspaces()
+    }
   }, [state])
 
   const logout = React.useCallback(() => {

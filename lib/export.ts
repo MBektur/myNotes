@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { NOTE_COLORS, PRIORITIES, STATUSES, type Note } from "./types"
+import { NOTE_COLORS, PRIORITIES, STATUSES, type Note, type Workspace } from "./types"
 import { todayStr } from "./filters"
 import { parseCsv } from "./csv"
 
@@ -11,6 +11,7 @@ const noteSchema = z.object({
   title: z.string().optional(),
   content: z.string().optional(),
   category: z.string().optional(),
+  workspaceId: z.string().optional(),
   tags: z.array(z.string()).default([]),
   priority: z.enum(PRIORITIES).optional(),
   deadline: z.string().optional(),
@@ -35,10 +36,25 @@ const noteSchema = z.object({
   order: z.number().optional(),
 })
 
-const fileSchema = z.object({ version: z.number(), notes: z.array(noteSchema) })
+const workspaceSchema = z.object({
+  id: z.string().min(1),
+  name: z.string(),
+  emoji: z.string().optional(),
+  color: z.enum(NOTE_COLORS).optional(),
+  order: z.number().optional(),
+})
 
-export function exportJson(notes: Note[]) {
-  const blob = new Blob([JSON.stringify({ version: 1, notes }, null, 2)], {
+const fileSchema = z.object({
+  version: z.number(),
+  notes: z.array(noteSchema),
+  workspaces: z.array(workspaceSchema).default([]),
+})
+
+/** noteWorkspace: CSV'dá workspace peqet at bilen kélidu (xatire id -> at). */
+export type ImportData = { notes: Note[]; workspaces: Workspace[]; noteWorkspace?: Map<string, string> }
+
+export function exportJson(notes: Note[], workspaces: Workspace[] = []) {
+  const blob = new Blob([JSON.stringify({ version: 1, workspaces, notes }, null, 2)], {
     type: "application/json",
   })
   const url = URL.createObjectURL(blob)
@@ -49,12 +65,15 @@ export function exportJson(notes: Note[]) {
   URL.revokeObjectURL(url)
 }
 
-export async function parseImport(file: File): Promise<Note[] | null> {
+export async function parseImport(file: File): Promise<ImportData | null> {
   try {
-    if (/\.csv$/i.test(file.name) || file.type === "text/csv") return parseCsv(await file.text())
+    if (/\.csv$/i.test(file.name) || file.type === "text/csv") {
+      const csv = parseCsv(await file.text())
+      return csv ? { notes: csv.notes, workspaces: [], noteWorkspace: csv.noteWorkspace } : null
+    }
     const json = JSON.parse(await file.text())
     const res = fileSchema.safeParse(json)
-    return res.success ? (res.data.notes as Note[]) : null
+    return res.success ? { notes: res.data.notes as Note[], workspaces: res.data.workspaces } : null
   } catch {
     return null
   }

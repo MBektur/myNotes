@@ -38,6 +38,16 @@ export type Attachment = {
 }
 export type ChecklistItem = { id: string; text: string; done: boolean }
 
+/** Üst kategori: shexsiy / mektep / proyekt toplumi qatarliq. Notlar `workspaceId` arqiliq baghlinidu. */
+export type Workspace = {
+  id: string
+  name: string
+  emoji?: string
+  color?: NoteColor
+  /** Kichik = aldida */
+  order?: number
+}
+
 export type Note = {
   id: string
   status: Status
@@ -46,6 +56,7 @@ export type Note = {
   title?: string
   content?: string
   category?: string
+  workspaceId?: string
   tags: string[]
   priority?: Priority
   deadline?: string
@@ -71,6 +82,8 @@ export function colorForCategory(category?: string): NoteColor {
   for (const ch of category) h = (h * 31 + ch.charCodeAt(0)) >>> 0
   return NOTE_COLORS[h % NOTE_COLORS.length]
 }
+
+export const WORKSPACE_EMOJIS = ["📁", "👤", "🏫", "👥", "💼", "🏠", "💻", "📚", "🎨", "🧪", "🚀", "🎯", "🛒", "✈️", "💡", "🌱"] as const
 
 export function noteColor(n: Note): NoteColor {
   return n.color ?? colorForCategory(n.category)

@@ -21,6 +21,7 @@ import { isOverdue, progressOf } from "@/lib/filters"
 import { useShell } from "./app-shell"
 import { useNotes } from "@/lib/notes-store"
 import { NOTE_COLORS, PRIORITY_VISUAL, STATUSES, noteColor, type Note } from "@/lib/types"
+import { WorkspaceBadge } from "./workspace-badge"
 
 export const priorityStyle: Record<string, string> = {
   low: "bg-slate-500/15 text-slate-700 dark:text-slate-300",
@@ -135,6 +136,7 @@ export function NoteCard({
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex flex-wrap gap-1">
+          <WorkspaceBadge id={note.workspaceId} />
           {note.category && (
             <Badge variant="secondary" className="bg-[var(--note-chip)]">
               {note.category}

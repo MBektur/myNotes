@@ -3,7 +3,7 @@
 import { paragraphAt, paragraphDir } from "@/lib/bidi"
 import * as React from "react"
 import { format, parseISO } from "date-fns"
-import { AlignLeft, Check, CalendarDays, CheckSquare, FileText, Flag, Folder, Hash, Link2, Paperclip, Palette, Plus, Type, X, Activity } from "lucide-react"
+import { AlignLeft, Check, CalendarDays, CheckSquare, FileText, Flag, Folder, Hash, Layers, Link2, Paperclip, Palette, Plus, Type, X, Activity } from "lucide-react"
 import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -25,6 +25,8 @@ import { cn } from "@/lib/utils"
 import { t } from "@/lib/i18n"
 import { ug } from "@/lib/ug"
 import { useNotes } from "@/lib/notes-store"
+import { useWorkspaces } from "@/lib/workspaces-store"
+import { WorkspaceEditor } from "./workspace-editor"
 import { deleteBlobs, putBlob, useBlobUrl } from "@/lib/blobs"
 import { compressImage } from "@/lib/image"
 import {
@@ -42,7 +44,7 @@ import {
   type Status,
 } from "@/lib/types"
 
-export type DialogTarget = { note?: Note; status?: Status; deadline?: string } | null
+export type DialogTarget = { note?: Note; status?: Status; deadline?: string; workspaceId?: string } | null
 
 function Field({
   label,
@@ -112,6 +114,8 @@ function NoteForm({
   const [title, setTitle] = React.useState(n?.title ?? "")
   const [content, setContent] = React.useState(n?.content ?? "")
   const [caret, setCaret] = React.useState(0)
+  const workspaces = useWorkspaces()
+  const [workspaceId, setWorkspaceId] = React.useState<string | undefined>(n ? n.workspaceId : target.workspaceId)
   const [category, setCategory] = React.useState(n?.category ?? "")
   const [tags, setTags] = React.useState<string[]>(n?.tags ?? [])
   const [tagInput, setTagInput] = React.useState("")
@@ -126,10 +130,12 @@ function NoteForm({
   const [newCategory, setNewCategory] = React.useState("")
   const [calOpen, setCalOpen] = React.useState(false)
 
-  const categories = React.useMemo(
-    () => Array.from(new Set(notes.map((x) => x.category).filter(Boolean) as string[])).sort(),
-    [notes]
-  )
+  // Workspace tallanghan bolsa, aldi bilen shu workspace'te ishlitilgen kategoriyeler tewsiye qilinidu (yoq bolsa hemmisi).
+  const categories = React.useMemo(() => {
+    const uniq = (list: Note[]) => Array.from(new Set(list.map((x) => x.category).filter(Boolean) as string[])).sort()
+    const inWs = workspaceId ? uniq(notes.filter((x) => x.workspaceId === workspaceId)) : []
+    return inWs.length ? inWs : uniq(notes)
+  }, [notes, workspaceId])
 
   // Bar kategoriyeler + hazir tallanghan (téxi saqlanmighan yéngi) kategoriye.
   const categoryOptions = React.useMemo(
@@ -179,6 +185,7 @@ function NoteForm({
       title: title.trim() || undefined,
       content: content.trim() || undefined,
       category: category.trim() || undefined,
+      workspaceId,
       tags: finalTags,
       priority,
       deadline,
@@ -224,6 +231,38 @@ function NoteForm({
         </Field>
 
         <div className="grid gap-4 sm:grid-cols-2">
+          <Field label={t.form.workspace} icon={<Layers />} className="sm:col-span-2">
+            <div className="flex flex-wrap items-center gap-1.5">
+              {workspaces.length === 0 && (
+                <span className="text-xs text-muted-foreground">{t.form.noWorkspaces}</span>
+              )}
+              {workspaces.map((w) => {
+                const active = workspaceId === w.id
+                return (
+                  <span key={w.id} className="inline-flex items-center gap-1">
+                    <button
+                      type="button"
+                      aria-pressed={active}
+                      onClick={() => setWorkspaceId(active ? undefined : w.id)}
+                      className={cn(
+                        `note-${w.color ?? "blue"} inline-flex h-7 items-center gap-1.5 rounded-full border border-(--note-chip) px-2.5 text-xs font-medium transition-colors`,
+                        active ? "bg-(--note-chip)" : "bg-(--note-bg)/40"
+                      )}
+                    >
+                      <span aria-hidden>{w.emoji ?? "📁"}</span> <span dir="auto">{w.name}</span>
+                    </button>
+                    {active && (
+                      <WorkspaceEditor
+                        workspace={w}
+                        onDeleted={() => setWorkspaceId(undefined)}
+                      />
+                    )}
+                  </span>
+                )
+              })}
+              <WorkspaceEditor onSaved={(w) => setWorkspaceId(w.id)} />
+            </div>
+          </Field>
           <Field label={t.form.category} icon={<Folder />} className="sm:col-span-2">
             <div className="space-y-2">
               <div className="flex flex-wrap gap-1.5">

@@ -21,6 +21,7 @@ import { demoNotes } from "@/lib/demo"
 import { emptyFilters, filterNotes, isOverdue, sortNotes, type Filters, type SortBy } from "@/lib/filters"
 import { NotesProvider, useNotes } from "@/lib/notes-store"
 import { loadSort, loadView, saveSort, saveView } from "@/lib/storage"
+import { useWorkspaces } from "@/lib/workspaces-store"
 import type { Note, Status, ViewMode } from "@/lib/types"
 import { AppHeader } from "./app-header"
 import { AppSidebar } from "./app-sidebar"
@@ -59,6 +60,7 @@ export function useShell() {
 function Inner({ children }: { children: React.ReactNode }) {
   const { notes, hydrated, remove, importMerge } = useNotes()
   const { logout } = useAuth()
+  const workspaces = useWorkspaces()
   const router = useRouter()
   const pathname = usePathname()
   const { doExport, doExportCsv, pickFile, ui: importUi } = useImportExport()
@@ -81,17 +83,34 @@ function Inner({ children }: { children: React.ReactNode }) {
     setViewState(v)
     saveView(v)
   }
+  const wsNames = React.useMemo(() => new Map(workspaces.map((w) => [w.id, w.name])), [workspaces])
   const visible = React.useMemo(
-    () => sortNotes(filterNotes(notes, filters), sortBy),
-    [notes, filters, sortBy]
+    () => sortNotes(filterNotes(notes, filters, wsNames), sortBy),
+    [notes, filters, sortBy, wsNames]
   )
+
+  // Öchürülgen workspace süzgüchte qalip qalmisun (aldin körülgenlerge qarap, yüklinish jeryanidiki bosh tizimlik xata sanalmisun)
+  const knownWs = React.useRef<Set<string>>(new Set())
+  React.useEffect(() => {
+    const now = new Set(workspaces.map((w) => w.id))
+    const gone = [...knownWs.current].filter((id) => !now.has(id))
+    knownWs.current = now
+    if (!gone.length) return
+    setFilters((f) =>
+      f.workspaces.some((id) => gone.includes(id))
+        ? { ...f, workspaces: f.workspaces.filter((id) => !gone.includes(id)) }
+        : f
+    )
+  }, [workspaces])
   const loadDemo = () => {
     importMerge(demoNotes())
     toast.success(t.dashboard.demoLoaded)
   }
   const edit = (n: Note) => setTarget({ note: n })
   const open = (n: Note) => setDetail(n)
-  const add = (status?: Status, deadline?: string) => setTarget({ status, deadline })
+  // Süzgüchte peqet bir workspace tallanghan bolsa, yéngi xatire shu workspace'ke chüshidu
+  const add = (status?: Status, deadline?: string) =>
+    setTarget({ status, deadline, workspaceId: filters.workspaces.length === 1 ? filters.workspaces[0] : undefined })
   const onNotesPage = pathname.startsWith("/notes")
   const onAbout = pathname.startsWith("/about")
   const onSchedule = pathname.startsWith("/schedule")

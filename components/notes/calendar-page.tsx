@@ -15,6 +15,7 @@ import { t } from "@/lib/i18n"
 import { isOverdue, todayStr } from "@/lib/filters"
 import { useNotes } from "@/lib/notes-store"
 import { noteColor, type Note } from "@/lib/types"
+import { useWorkspaces } from "@/lib/workspaces-store"
 import { useShell } from "./app-shell"
 import { priorityStyle } from "./note-card"
 
@@ -49,6 +50,7 @@ function Chip({ n, onOpen }: { n: Note; onOpen: (n: Note) => void }) {
 
 function NoteRow({ n, onOpen }: { n: Note; onOpen: (n: Note) => void }) {
   const { move } = useNotes()
+  const ws = useWorkspaces().find((w) => w.id === n.workspaceId)
   return (
     <div className={cn(`note-${noteColor(n)} note-surface flex items-center gap-3 rounded-2xl px-3 py-2.5 shadow-sm`)}>
       <Checkbox
@@ -61,7 +63,7 @@ function NoteRow({ n, onOpen }: { n: Note; onOpen: (n: Note) => void }) {
           {title(n)}
         </span>
         <span className="block truncate text-xs text-foreground/60">
-          {[n.category, t.statuses[n.status]].filter(Boolean).join(" · ")}
+          {[ws && `${ws.emoji ?? "📁"} ${ws.name}`, n.category, t.statuses[n.status]].filter(Boolean).join(" · ")}
         </span>
       </button>
       {n.priority && (

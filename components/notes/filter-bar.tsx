@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/select"
 import { t } from "@/lib/i18n"
 import { emptyFilters, hasActiveFilters, type Filters, type SortBy } from "@/lib/filters"
+import { useWorkspaces } from "@/lib/workspaces-store"
 import { MultiSelect, OptionLabel, type Option } from "./multi-select"
 import {
   PRIORITIES,
@@ -91,8 +92,15 @@ export function FilterBar({
   sortBy: SortBy
   setSortBy: (s: SortBy) => void
 }) {
-  const categories = Array.from(new Set(notes.map((n) => n.category).filter(Boolean) as string[])).sort()
-  const allTags = Array.from(new Set(notes.flatMap((n) => n.tags))).sort()
+  const workspaces = useWorkspaces()
+  // Workspace tallanghan bolsa, kategoriye / xeshtek tallashliri shu workspace'lerdiki xatirilardin chiqidu (tallanghanlar saqlinidu)
+  const scoped = filters.workspaces.length
+    ? notes.filter((n) => !!n.workspaceId && filters.workspaces.includes(n.workspaceId))
+    : notes
+  const categories = Array.from(
+    new Set([...scoped.map((n) => n.category), ...filters.categories].filter(Boolean) as string[])
+  ).sort()
+  const allTags = Array.from(new Set([...scoped.flatMap((n) => n.tags), ...filters.tags])).sort()
   const active = hasActiveFilters(filters)
 
   return (
@@ -109,7 +117,13 @@ export function FilterBar({
           </button>
         </div>
       )}
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-7">
+        <MultiSelect
+          label={t.form.workspace}
+          selected={filters.workspaces}
+          onChange={(v) => setFilters({ ...filters, workspaces: v })}
+          options={workspaces.map((w) => ({ value: w.id, label: w.name, icon: w.emoji ?? "📁", color: w.color }))}
+        />
         <MultiSelect
           label={t.status}
           selected={filters.statuses}

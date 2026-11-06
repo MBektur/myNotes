@@ -6,6 +6,7 @@ import { t } from "@/lib/i18n"
 import { useNotes } from "@/lib/notes-store"
 import { CardView } from "./card-view"
 import { FilterBar } from "./filter-bar"
+import { WorkspaceTabs } from "./workspace-tabs"
 import { KanbanView } from "./kanban-view"
 import { ListView } from "./list-view"
 import { Toolbar } from "./toolbar"
@@ -18,6 +19,7 @@ export function NotesPage() {
   return (
     <>
       <Toolbar view={view} setView={setView} onNew={() => add()} />
+      <WorkspaceTabs notes={notes} filters={filters} setFilters={setFilters} />
       <FilterBar notes={notes} filters={filters} setFilters={setFilters} sortBy={sortBy} setSortBy={setSortBy} />
 
       {!hydrated ? (

@@ -3,7 +3,7 @@
 import { Paragraphs } from "./paragraphs"
 import * as React from "react"
 import { format, differenceInCalendarDays, parseISO } from "date-fns"
-import { Activity, AlignLeft, CalendarDays, CheckSquare, Flag, Hash, ExternalLink, FileText, Folder, ImageIcon, Link2, Palette, Pencil, Trash2, X } from "lucide-react"
+import { Activity, AlignLeft, CalendarDays, CheckSquare, Flag, Hash, ExternalLink, FileText, Folder, ImageIcon, Layers, Link2, Palette, Pencil, Trash2, X } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -16,6 +16,7 @@ import { isOverdue } from "@/lib/filters"
 import { useNotes } from "@/lib/notes-store"
 import { PRIORITY_VISUAL, STATUS_VISUAL, noteColor, type Attachment, type Note } from "@/lib/types"
 import { priorityStyle } from "./note-card"
+import { WorkspaceBadge } from "./workspace-badge"
 
 function Section({
   title, icon, count, children,
@@ -215,6 +216,11 @@ function Detail({ note }: { note: Note }) {
                 {rel}
               </span>
             )}
+          </Prop>
+        )}
+        {note.workspaceId && (
+          <Prop label={t.form.workspace} icon={<Layers />}>
+            <WorkspaceBadge id={note.workspaceId} />
           </Prop>
         )}
         {note.category && (

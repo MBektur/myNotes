@@ -1,20 +1,21 @@
-import { NOTE_COLORS, PRIORITIES, STATUSES, newId, type Note } from "./types"
+import { NOTE_COLORS, PRIORITIES, STATUSES, newId, type Note, type Workspace } from "./types"
 import { todayStr } from "./filters"
 import { ug } from "./ug"
 
 const COLUMNS = [
-  "id", "title", "content", "category", "tags", "status", "priority",
+  "id", "title", "content", "workspace", "category", "tags", "status", "priority",
   "deadline", "color", "links", "checklist", "createdAt", "updatedAt",
 ] as const
 
 const esc = (v: string) => (/[",\n\r;]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v)
 
 /** tags: "a;b" · links: "url|label;url2" · checklist: "[x] text;[ ] text" */
-function row(n: Note): string[] {
+function row(n: Note, wsName: ReadonlyMap<string, string>): string[] {
   return [
     n.id,
     n.title ?? "",
     n.content ?? "",
+    (n.workspaceId && wsName.get(n.workspaceId)) || "",
     n.category ?? "",
     n.tags.join(";"),
     n.status,
@@ -28,13 +29,14 @@ function row(n: Note): string[] {
   ]
 }
 
-export function notesToCsv(notes: Note[]) {
-  const lines = [COLUMNS.join(","), ...notes.map((n) => row(n).map(esc).join(","))]
+export function notesToCsv(notes: Note[], workspaces: Workspace[] = []) {
+  const wsName = new Map(workspaces.map((w) => [w.id, w.name]))
+  const lines = [COLUMNS.join(","), ...notes.map((n) => row(n, wsName).map(esc).join(","))]
   return "﻿" + lines.join("\r\n") // BOM: Excel UTF-8 (Uyghurche) toghra achsun
 }
 
-export function exportCsv(notes: Note[]) {
-  const blob = new Blob([notesToCsv(notes)], { type: "text/csv;charset=utf-8" })
+export function exportCsv(notes: Note[], workspaces: Workspace[] = []) {
+  const blob = new Blob([notesToCsv(notes, workspaces)], { type: "text/csv;charset=utf-8" })
   const url = URL.createObjectURL(blob)
   const a = document.createElement("a")
   a.href = url
@@ -73,7 +75,10 @@ export function parseCsvRows(text: string): string[][] {
 
 const split = (v: string) => v.split(";").map((x) => x.trim()).filter(Boolean)
 
-export function parseCsv(text: string): Note[] | null {
+/** noteWorkspace: xatire id -> workspace ati (id'ga aylandurush import tárepte, chünki workspace'ler store'da). */
+export type CsvResult = { notes: Note[]; noteWorkspace: Map<string, string> }
+
+export function parseCsv(text: string): CsvResult | null {
   const rows = parseCsvRows(text)
   if (rows.length < 2) return null
   const head = rows[0].map((h) => h.trim().toLowerCase())
@@ -83,7 +88,8 @@ export function parseCsv(text: string): Note[] | null {
   const get = (r: string[], name: string) => (idx(name) >= 0 ? (r[idx(name)] ?? "").trim() : "")
   const now = new Date().toISOString()
 
-  return rows.slice(1).map((r) => {
+  const noteWorkspace = new Map<string, string>()
+  const notes = rows.slice(1).map((r) => {
     const status = get(r, "status")
     const priority = get(r, "priority")
     const color = get(r, "color")
@@ -109,6 +115,9 @@ export function parseCsv(text: string): Note[] | null {
         return { id: `${i}-${newId()}`, done: m ? m[1].toLowerCase() === "x" : false, text: ug(m ? m[2] : s) }
       }),
     }
+    const ws = ug(get(r, "workspace"))
+    if (ws) noteWorkspace.set(note.id, ws)
     return note
   }).filter((n) => n.title || n.content || n.category || n.tags.length || n.checklist.length)
+  return { notes, noteWorkspace }
 }
