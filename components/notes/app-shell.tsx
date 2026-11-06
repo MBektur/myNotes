@@ -36,6 +36,17 @@ const NoteDetailPanel = dynamic(() => import("./note-detail").then((m) => m.Note
 const NoteDialog = dynamic(() => import("./note-dialog").then((m) => m.NoteDialog), { ssr: false })
 const CommandSearch = dynamic(() => import("./command-search").then((m) => m.CommandSearch), { ssr: false })
 
+// Sehipe almishish animatsiyasi peqet keng ékranda (md+). Telefonda View Transition bashlansa, brauzér pütün sehipening
+// körünüshini "chong viewport" ölchimide chizidu we astida qadalghan menyu animatsiye jeryanida körünmey qalidu.
+const DESKTOP_MQ = "(min-width: 768px)"
+const subscribeDesktop = (cb: () => void) => {
+  const mq = window.matchMedia(DESKTOP_MQ)
+  mq.addEventListener("change", cb)
+  return () => mq.removeEventListener("change", cb)
+}
+const useIsDesktop = () =>
+  React.useSyncExternalStore(subscribeDesktop, () => window.matchMedia(DESKTOP_MQ).matches, () => false)
+
 type Shell = {
   filters: Filters
   setFilters: (f: Filters) => void
@@ -66,6 +77,7 @@ function Inner({ children }: { children: React.ReactNode }) {
   const workspaces = useWorkspaces()
   const router = useRouter()
   const pathname = usePathname()
+  const isDesktop = useIsDesktop()
   const { doExport, doExportCsv, pickFile, ui: importUi } = useImportExport()
   const scheduleIo = useScheduleIo()
   const [filters, setFilters] = React.useState<Filters>(emptyFilters)
@@ -163,7 +175,7 @@ function Inner({ children }: { children: React.ReactNode }) {
               }}
             />
             {/* Sehipe almashqanda peqet mezmun yumshaq almishidu; sidebar/header/bar ornida turidu */}
-            <ViewTransition key={pathname} default="page-fade">
+            <ViewTransition key={pathname} default={isDesktop ? "page-fade" : "none"}>
               <div className="flex flex-col gap-4">{children}</div>
             </ViewTransition>
           </div>
