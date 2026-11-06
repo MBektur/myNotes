@@ -17,6 +17,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { LanguageSwitcher, useLocale } from "@/components/i18n-provider"
 import { t } from "@/lib/i18n"
 import type { Note } from "@/lib/types"
 
@@ -50,6 +51,7 @@ export function AppSidebar({
   const { resolvedTheme, setTheme } = useTheme()
   const { setOpenMobile } = useSidebar()
   const pathname = usePathname()
+  const { dir } = useLocale()
   const close = () => setOpenMobile(false)
 
   const nav = [
@@ -62,7 +64,7 @@ export function AppSidebar({
   ]
 
   return (
-    <Sidebar side="right" variant="floating">
+    <Sidebar side={dir === "rtl" ? "right" : "left"} variant="floating">
       <SidebarHeader className="p-4 pb-2">
         <div className="flex flex-col items-center text-center">
           <div className="clay size-32 overflow-hidden rounded-[2rem] p-1.5">
@@ -103,6 +105,7 @@ export function AppSidebar({
           <span className="text-4xl" aria-hidden>🪴</span>
           <p className="text-xs leading-relaxed text-foreground/70">{t.dashboard.motivation}</p>
         </div>
+        <LanguageSwitcher />
         <div className="flex items-center justify-between px-1">
           {[
             ...(schedule

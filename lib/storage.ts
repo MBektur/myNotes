@@ -1,4 +1,4 @@
-import type { SortBy } from "./filters"
+import type { SortBy, SortDir } from "./filters"
 import type { Note, ViewMode } from "./types"
 
 const DATA_KEY = "mynotes:data"
@@ -54,5 +54,22 @@ export function loadSort(): SortBy {
 export function saveSort(v: SortBy) {
   try {
     localStorage.setItem(SORT_KEY, v)
+  } catch {}
+}
+
+const SORT_DIR_KEY = "mynotes:sortDir"
+
+/** Saqlanghan yönilish; bolmisa null (chaqirghuchi tertipning eslidiki yönilishini ishlitidu). */
+export function loadSortDir(): SortDir | null {
+  try {
+    const v = localStorage.getItem(SORT_DIR_KEY)
+    if (v === "asc" || v === "desc") return v
+  } catch {}
+  return null
+}
+
+export function saveSortDir(v: SortDir) {
+  try {
+    localStorage.setItem(SORT_DIR_KEY, v)
   } catch {}
 }

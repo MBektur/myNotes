@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Check, ChevronsUpDown, X } from "lucide-react"
+import { Check, ChevronsUpDown, X, type LucideIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
 import {
@@ -38,12 +38,15 @@ export function OptionLabel({ option, className }: { option: Option; className?:
 /** Izdesh mümkin bolghan (searchable) köp tallash qutisi: Popover + cmdk. */
 export function MultiSelect({
   label,
+  icon: Icon,
   options,
   selected,
   onChange,
   className,
 }: {
   label: string
+  /** Label aldidiki kichik ikon */
+  icon?: LucideIcon
   options: Option[]
   selected: string[]
   onChange: (v: string[]) => void
@@ -56,7 +59,10 @@ export function MultiSelect({
 
   return (
     <div className={cn("min-w-0 space-y-1", className)}>
-      <Label className="text-xs text-muted-foreground">{label}</Label>
+      <Label className="gap-1.5 text-xs text-muted-foreground">
+        {Icon && <Icon className="size-3.5 shrink-0" aria-hidden />}
+        {label}
+      </Label>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger
           className="flex h-8 w-full items-center justify-between gap-1 rounded-xl border border-input bg-background/60 px-2.5 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50"

@@ -5,6 +5,7 @@ import { NotebookPen } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { isSupabaseConfigured, supabase } from "@/lib/supabase/client"
+import { LanguageSwitcher } from "@/components/i18n-provider"
 import { t } from "@/lib/i18n"
 
 export function LoginScreen() {
@@ -35,6 +36,7 @@ export function LoginScreen() {
           <h1 className="text-xl font-medium">{t.appName}</h1>
           <p className="text-sm text-muted-foreground">{t.login.subtitle}</p>
         </div>
+        <LanguageSwitcher />
         {!isSupabaseConfigured ? (
           <p className="text-center text-sm text-destructive">{t.login.notConfigured}</p>
         ) : (

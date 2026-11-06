@@ -14,13 +14,21 @@ import { useShell } from "./app-shell"
 
 export function NotesPage() {
   const { notes, hydrated } = useNotes()
-  const { filters, setFilters, sortBy, setSortBy, view, setView, visible, edit, add, askDelete } = useShell()
+  const { filters, setFilters, sortBy, setSortBy, sortDir, setSortDir, view, setView, visible, edit, add, askDelete } = useShell()
 
   return (
     <>
       <Toolbar view={view} setView={setView} onNew={() => add()} />
       <WorkspaceTabs notes={notes} filters={filters} setFilters={setFilters} />
-      <FilterBar notes={notes} filters={filters} setFilters={setFilters} sortBy={sortBy} setSortBy={setSortBy} />
+      <FilterBar
+        notes={notes}
+        filters={filters}
+        setFilters={setFilters}
+        sortBy={sortBy}
+        setSortBy={setSortBy}
+        sortDir={sortDir}
+        setSortDir={setSortDir}
+      />
 
       {!hydrated ? (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

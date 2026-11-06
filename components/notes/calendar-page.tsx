@@ -23,8 +23,8 @@ import { priorityStyle } from "./note-card"
 type View = "month" | "week" | "day" | "agenda"
 
 const key = (d: Date) => format(d, "yyyy-MM-dd")
-const dayMonth = (d: Date) => `${d.getDate()}-${t.dashboard.months[d.getMonth()]}`
-const fullDate = (d: Date) => `${d.getFullYear()}-يىلى ${dayMonth(d)}`
+const dayMonth = (d: Date) => t.dateFmt.dayMonth(d.getDate(), t.dashboard.months[d.getMonth()])
+const fullDate = (d: Date) => t.dateFmt.full(d.getFullYear(), d.getDate(), t.dashboard.months[d.getMonth()])
 const wd = (d: Date) => t.calendar.weekdays[d.getDay()]
 const title = (n: Note) => n.title || stripMarkdown(n.content ?? "").slice(0, 40) || t.untitled
 const isWeekend = (d: Date) => d.getDay() === 0 || d.getDay() === 6
@@ -203,8 +203,8 @@ function DayView({
           <h2 className="text-4xl font-regular">{fullDate(cursor)}</h2>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" className="rounded-xl" onClick={() => onShift(-1)}><ChevronRight /> {t.calendar.prevDay}</Button>
-          <Button variant="outline" className="rounded-xl" onClick={() => onShift(1)}>{t.calendar.nextDay} <ChevronLeft /></Button>
+          <Button variant="outline" className="rounded-xl" onClick={() => onShift(-1)}><ChevronLeft className="rtl:rotate-180" /> {t.calendar.prevDay}</Button>
+          <Button variant="outline" className="rounded-xl" onClick={() => onShift(1)}>{t.calendar.nextDay} <ChevronRight className="rtl:rotate-180" /></Button>
         </div>
       </section>
       <div className="grid gap-3 sm:grid-cols-3">
@@ -296,10 +296,10 @@ export function CalendarPage() {
   const weekStart = startOfWeek(cursor, { weekStartsOn: 1 })
   const label =
     view === "week"
-      ? `${dayMonth(weekStart)} – ${dayMonth(addDays(weekStart, 6))} ${addDays(weekStart, 6).getFullYear()}`
+      ? `${dayMonth(weekStart)} – ${t.dateFmt.dayMonthYear(addDays(weekStart, 6).getDate(), t.dashboard.months[addDays(weekStart, 6).getMonth()], addDays(weekStart, 6).getFullYear())}`
       : view === "day"
         ? fullDate(cursor)
-        : `${t.dashboard.months[cursor.getMonth()]} ${cursor.getFullYear()}`
+        : t.dateFmt.monthYear(t.dashboard.months[cursor.getMonth()], cursor.getFullYear())
 
   return (
     <>
@@ -316,7 +316,7 @@ export function CalendarPage() {
         </ToggleGroup>
 
         <div className="flex items-center gap-1">
-          <Button variant="outline" size="icon" className="rounded-xl" onClick={() => shift(-1)} aria-label={t.calendar.prev}><ChevronRight /></Button>
+          <Button variant="outline" size="icon" className="rounded-xl" onClick={() => shift(-1)} aria-label={t.calendar.prev}><ChevronLeft className="rtl:rotate-180" /></Button>
           <Select value={String(cursor.getMonth())} onValueChange={(v) => setCursor(new Date(cursor.getFullYear(), Number(v), 1))}>
             <SelectTrigger size="sm" className="w-32 rounded-xl"><SelectValue>{(v: string) => t.dashboard.months[Number(v)]}</SelectValue></SelectTrigger>
             <SelectContent>
@@ -329,7 +329,7 @@ export function CalendarPage() {
               {years.map((y) => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}
             </SelectContent>
           </Select>
-          <Button variant="outline" size="icon" className="rounded-xl" onClick={() => shift(1)} aria-label={t.calendar.next}><ChevronLeft /></Button>
+          <Button variant="outline" size="icon" className="rounded-xl" onClick={() => shift(1)} aria-label={t.calendar.next}><ChevronRight className="rtl:rotate-180" /></Button>
         </div>
 
         <Button variant="outline" className="rounded-xl" onClick={() => setCursor(new Date())}>{t.today}</Button>

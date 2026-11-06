@@ -9,9 +9,18 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { useAuth } from "@/components/auth/auth-gate"
 import { t } from "@/lib/i18n"
 import { demoNotes } from "@/lib/demo"
-import { emptyFilters, filterNotes, isOverdue, sortNotes, type Filters, type SortBy } from "@/lib/filters"
+import {
+  SORT_DEFAULT_DIR,
+  emptyFilters,
+  filterNotes,
+  isOverdue,
+  sortNotes,
+  type Filters,
+  type SortBy,
+  type SortDir,
+} from "@/lib/filters"
 import { NotesProvider, useNotes } from "@/lib/notes-store"
-import { loadSort, loadView, saveSort, saveView } from "@/lib/storage"
+import { loadSort, loadSortDir, loadView, saveSort, saveSortDir, saveView } from "@/lib/storage"
 import { useWorkspaces } from "@/lib/workspaces-store"
 import type { Note, Status, ViewMode } from "@/lib/types"
 import { AppHeader } from "./app-header"
@@ -32,6 +41,8 @@ type Shell = {
   setFilters: (f: Filters) => void
   sortBy: SortBy
   setSortBy: (s: SortBy) => void
+  sortDir: SortDir
+  setSortDir: (d: SortDir) => void
   view: ViewMode
   setView: (v: ViewMode) => void
   visible: Note[]
@@ -60,9 +71,18 @@ function Inner({ children }: { children: React.ReactNode }) {
   const [filters, setFilters] = React.useState<Filters>(emptyFilters)
   const [sortOverride, setSortState] = React.useState<SortBy | null>(null)
   const sortBy: SortBy = sortOverride ?? (hydrated ? loadSort() : "priority")
+  // Tertip almashqanda yönilish shu tertipning eslidiki yönilishige qaytidu
+  const [dirOverride, setDirState] = React.useState<SortDir | null>(null)
+  const sortDir: SortDir = dirOverride ?? (hydrated ? loadSortDir() : null) ?? SORT_DEFAULT_DIR[sortBy]
   const setSortBy = (s: SortBy) => {
     setSortState(s)
     saveSort(s)
+    setDirState(SORT_DEFAULT_DIR[s])
+    saveSortDir(SORT_DEFAULT_DIR[s])
+  }
+  const setSortDir = (d: SortDir) => {
+    setDirState(d)
+    saveSortDir(d)
   }
   const [viewOverride, setViewState] = React.useState<ViewMode | null>(null)
   const view: ViewMode = viewOverride ?? (hydrated ? loadView() : "kanban")
@@ -77,8 +97,8 @@ function Inner({ children }: { children: React.ReactNode }) {
   }
   const wsNames = React.useMemo(() => new Map(workspaces.map((w) => [w.id, w.name])), [workspaces])
   const visible = React.useMemo(
-    () => sortNotes(filterNotes(notes, filters, wsNames), sortBy),
-    [notes, filters, sortBy, wsNames]
+    () => sortNotes(filterNotes(notes, filters, wsNames), sortBy, sortDir),
+    [notes, filters, sortBy, sortDir, wsNames]
   )
 
   // Öchürülgen workspace süzgüchte qalip qalmisun (aldin körülgenlerge qarap, yüklinish jeryanidiki bosh tizimlik xata sanalmisun)
@@ -109,7 +129,7 @@ function Inner({ children }: { children: React.ReactNode }) {
   const onArchive = pathname.startsWith("/archive")
 
   const ctx: Shell = {
-    filters, setFilters, sortBy, setSortBy, view, setView, visible,
+    filters, setFilters, sortBy, setSortBy, sortDir, setSortDir, view, setView, visible,
     edit, open, add, askDelete: setToDelete, loadDemo,
   }
 

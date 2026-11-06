@@ -23,7 +23,7 @@ const hours = Array.from({ length: SCHEDULE_END_HOUR - SCHEDULE_START_HOUR + 1 }
 const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 0]
 
 const key = (d: Date) => format(d, "yyyy-MM-dd")
-const dayMonth = (d: Date) => `${d.getDate()}-${t.dashboard.months[d.getMonth()]}`
+const dayMonth = (d: Date) => t.dateFmt.dayMonth(d.getDate(), t.dashboard.months[d.getMonth()])
 const top = (min: number) => ((Math.max(min, START_MIN) - START_MIN) / 60) * HOUR_PX
 const height = (a: number, b: number) => ((Math.min(b, END_MIN) - Math.max(a, START_MIN)) / 60) * HOUR_PX
 

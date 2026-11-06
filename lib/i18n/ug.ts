@@ -1,8 +1,16 @@
-import type { Priority, Status } from "./types"
+import type { Priority, Status } from "../types"
 
-// بارلىق كۆرۈنمە يۈزى تېكىستلىرى مۇشۇ يەردە. ئۆزگەرتىش ئۈچۈن مۇشۇ ھۆججەتنى تەھرىرلەڭ.
-export const t = {
+// ئۇيغۇرچە (ug) — ئاساسىي تىل. باشقا تىللار (en.ts، tr.ts) مۇشۇ قۇرۇلمىغا ئەگىشىدۇ (Messages تىپى).
+export const ug = {
   appName: "myNotes",
+  lang: { label: "تىل", ug: "ئۇيغۇرچە", en: "English", tr: "Türkçe" },
+  listSep: "، ",
+  dateFmt: {
+    dayMonth: (day: number, month: string) => `${day}-${month}`,
+    full: (year: number, day: number, month: string) => `${year}-يىلى ${day}-${month}`,
+    monthYear: (month: string, year: number) => `${month} ${year}`,
+    dayMonthYear: (day: number, month: string, year: number) => `${day}-${month} ${year}`,
+  },
   multi: { selected: (n: number) => `${n} تاللاندى`, clear: "تازىلاش" },
   calendar: {
     title: "كالېندار",
@@ -167,6 +175,7 @@ export const t = {
     title: "ماۋزۇ",
     manual: "قولدا تەرتىپلەش",
   },
+  sortDir: { asc: "ئۆسۈش", desc: "كېمەيىش" },
   deadlineFilter: {
     overdue: "مۇددىتى ئۆتكەن",
     week: "بۇ ھەپتە",
@@ -304,3 +313,5 @@ export const t = {
   linksCount: (n: number) => `${n} ئۇلانما`,
   progress: "ئىلگىرىلەش",
 }
+
+export type Messages = typeof ug

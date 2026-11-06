@@ -12,6 +12,16 @@ export type Filters = {
 }
 
 export type SortBy = "updated" | "deadline" | "priority" | "title" | "manual"
+export type SortDir = "asc" | "desc"
+
+/** Her tertipning eslidiki yönilishi (bu yönilish bilen eslide qandaq tizilghan bolsa shu). */
+export const SORT_DEFAULT_DIR: Record<SortBy, SortDir> = {
+  updated: "desc",
+  deadline: "asc",
+  priority: "desc",
+  title: "asc",
+  manual: "asc",
+}
 
 export const emptyFilters: Filters = { query: "", statuses: [], workspaces: [], categories: [], tags: [], priorities: [] }
 
@@ -67,25 +77,28 @@ export function filterNotes(notes: Note[], f: Filters, wsNames?: ReadonlyMap<str
   return out
 }
 
-export function sortNotes(notes: Note[], by: SortBy) {
+export function sortNotes(notes: Note[], by: SortBy, dir: SortDir = SORT_DEFAULT_DIR[by]) {
   const arr = [...notes]
+  const sign = dir === "asc" ? 1 : -1
+  const rank = (n: Note) => (n.priority ? PRIORITIES.indexOf(n.priority) : -1)
   switch (by) {
     case "updated":
-      return arr.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+      return arr.sort((a, b) => sign * a.updatedAt.localeCompare(b.updatedAt))
     case "deadline":
-      return arr.sort((a, b) =>
-        (a.deadline ?? "9999").localeCompare(b.deadline ?? "9999")
-      )
+      // Mudditi bolmighanlar hemishe axirida qalidu
+      return arr.sort((a, b) => {
+        if (a.deadline && b.deadline) return sign * a.deadline.localeCompare(b.deadline)
+        if (a.deadline) return -1
+        if (b.deadline) return 1
+        return 0
+      })
     case "priority":
-      // Ohshash muhimliqta ماۋزۇ bo'yiche tertiplenidu.
+      // Ohshash muhimliqta ماۋزۇ bo'yiche tertiplenidu (ماۋزۇ hemishe ösüp).
       return arr.sort(
-        (a, b) =>
-          (b.priority ? PRIORITIES.indexOf(b.priority) : -1) -
-            (a.priority ? PRIORITIES.indexOf(a.priority) : -1) ||
-          (a.title ?? "").localeCompare(b.title ?? "")
+        (a, b) => sign * (rank(a) - rank(b)) || (a.title ?? "").localeCompare(b.title ?? "")
       )
     case "title":
-      return arr.sort((a, b) => (a.title ?? "").localeCompare(b.title ?? ""))
+      return arr.sort((a, b) => sign * (a.title ?? "").localeCompare(b.title ?? ""))
     case "manual":
       // Qolda sürüp tertiplengenler aldida; tertipsizler (yéngi xatire) axirida, yéngisi aldida
       return arr.sort(

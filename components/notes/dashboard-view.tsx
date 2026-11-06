@@ -5,6 +5,7 @@ import { format, parseISO } from "date-fns"
 import { Plus } from "lucide-react"
 import { Calendar } from "@/components/ui/calendar"
 import { Checkbox } from "@/components/ui/checkbox"
+import { useLocale } from "@/components/i18n-provider"
 import { cn } from "@/lib/utils"
 import { t } from "@/lib/i18n"
 import { isOverdue, todayStr } from "@/lib/filters"
@@ -154,6 +155,7 @@ export function DashboardView({
   onShowNotes: () => void
 }) {
   const { notes, move } = useNotes()
+  const { dir } = useLocale()
   const [day, setDay] = React.useState<Date | undefined>()
 
   const stats = computeStats(notes)
@@ -252,13 +254,13 @@ export function DashboardView({
       <div className="grid content-start gap-5 lg:col-span-4">
         <Panel title={t.dashboard.calendar} id="dash-calendar">
           <Calendar
-            dir="rtl"
+            dir={dir}
             weekStartsOn={1}
             mode="single"
             selected={day}
             onSelect={setDay}
             formatters={{
-              formatCaption: (d: Date) => `${t.dashboard.months[d.getMonth()]} ${d.getFullYear()}`,
+              formatCaption: (d: Date) => t.dateFmt.monthYear(t.dashboard.months[d.getMonth()], d.getFullYear()),
               formatWeekdayName: (d: Date) => t.dashboard.days[d.getDay()],
             }}
             modifiers={{ deadline: deadlineDays, weekend: (d: Date) => d.getDay() === 0 || d.getDay() === 6 }}

@@ -1,11 +1,13 @@
 "use client"
 
+import { useLocale } from "@/components/i18n-provider"
 import { t } from "@/lib/i18n"
 
 type Point = { weekday: number; count: number; today?: boolean }
 
-/** Bağımlılıksız SVG alan grafiği. RTL: ilk gün sağda; y ekseni yazıları başta. */
+/** Bağımlılıksız SVG alan grafiği. RTL: ilk gün sağda; LTR: ilk gün solda. y ekseni yazıları başta. */
 export function ActivityChart({ data, peakLabel }: { data: Point[]; peakLabel?: boolean }) {
+  const { dir } = useLocale()
   const W = 700
   const H = 220
   const top = 14
@@ -14,7 +16,7 @@ export function ActivityChart({ data, peakLabel }: { data: Point[]; peakLabel?: 
   const niceMax = Math.ceil(max / 4) * 4
   const slot = W / data.length
   const pts = data.map((d, i) => ({
-    x: W - (i + 0.5) * slot, // aynalanmış: ilk gün sağda
+    x: dir === "rtl" ? W - (i + 0.5) * slot : (i + 0.5) * slot, // RTL: aynalanmış, ilk gün sağda
     y: H - bottom - (d.count / niceMax) * (H - top - bottom),
     count: d.count,
   }))
@@ -24,7 +26,7 @@ export function ActivityChart({ data, peakLabel }: { data: Point[]; peakLabel?: 
   const ticks = [0, 1, 2, 3, 4].map((i) => (niceMax / 4) * i)
 
   return (
-    <div className="flex gap-2" dir="rtl">
+    <div className="flex gap-2" dir={dir}>
       <div className="relative h-52 w-7 shrink-0 text-[11px] text-muted-foreground">
         {ticks.map((v) => (
           <span

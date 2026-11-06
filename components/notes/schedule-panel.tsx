@@ -13,7 +13,7 @@ import { SubjectBadge } from "./subject-badge"
 
 const fmtKey = (k: string) => {
   const [y, m, d] = k.split("-").map(Number)
-  return `${d}-${t.dashboard.months[m - 1]} ${y}`
+  return t.dateFmt.dayMonthYear(d, t.dashboard.months[m - 1], y)
 }
 
 function InfoCard({ icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) {
@@ -96,7 +96,7 @@ export function SchedulePanel({
             <span className="tabular-nums">{fmtKey(l.from)} → {fmtKey(l.to)}</span>
           </InfoCard>
           <InfoCard icon={<CalendarX2 />} label={t.schedule.panel.excluded}>
-            {l.exclude?.length ? l.exclude.map(fmtKey).join("، ") : t.schedule.none}
+            {l.exclude?.length ? l.exclude.map(fmtKey).join(t.listSep) : t.schedule.none}
           </InfoCard>
         </div>
 

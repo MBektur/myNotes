@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "myNotes",
     short_name: "myNotes",
-    description: "شەخسىي خاتىرە ۋە ۋەزىپە تاختىسى",
+    description: "Personal notes and task board",
     start_url: "/",
     display: "standalone",
     dir: "rtl",

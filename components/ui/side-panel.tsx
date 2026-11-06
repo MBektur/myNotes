@@ -4,6 +4,7 @@ import * as React from "react"
 import { Dialog } from "@base-ui/react/dialog"
 import { X } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useLocale } from "@/components/i18n-provider"
 import { t } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 
@@ -29,7 +30,7 @@ function saveWidth(v: number) {
 
 /**
  * Chet tereptin échilidighan, kengliki sörep özgertkili bolidighan yan panel (modal).
- * Programma RTL bolghachqa, ong teriptiki gézish panelini yapmasliq üchün sol kéniridin échilidu.
+ * RTL (Uyghurche) da sol kéniridin, LTR (English / Türkçe) da ong kéniridin échilidu (sidebar bilen toqunushmasliq üchün).
  * Kengliki ikki sehipide (jeduel / xatire) ortaq bolup, brauzérda saqlinidu.
  */
 export function SidePanel({
@@ -56,6 +57,9 @@ export function SidePanel({
   scroll?: boolean
   children: React.ReactNode
 }) {
+  const { dir } = useLocale()
+  const rtl = dir === "rtl"
+  const side = rtl ? -1 : 1 // panel échilghan terep: RTL = sol (-1), LTR = ong (+1)
   const [width, setWidth] = React.useState(readWidth)
   const widthRef = React.useRef(width)
   const dragging = React.useRef(false)
@@ -71,7 +75,7 @@ export function SidePanel({
     saveWidth(widthRef.current)
   }
 
-  // ---- Mobilda barmaq bilen sol terepke sörep yépish (swipe) ----
+  // ---- Mobilda barmaq bilen panelning kéniri terepke sörep yépish (swipe) ----
   const popupRef = React.useRef<HTMLDivElement>(null)
   const swipe = React.useRef<{ x0: number; y0: number; t0: number; axis: "x" | "y" | null; dx: number } | null>(null)
 
@@ -92,7 +96,7 @@ export function SidePanel({
       if (g.axis === "x") e.currentTarget.setPointerCapture(e.pointerId)
     }
     if (g.axis !== "x") return
-    g.dx = Math.min(0, dx) // panel sol kéniridin ach; peqet sol terepke
+    g.dx = side < 0 ? Math.min(0, dx) : Math.max(0, dx) // peqet panelning kéniri terepke
     el.style.transition = "none"
     el.style.transform = `translateX(${g.dx}px)`
   }
@@ -102,10 +106,10 @@ export function SidePanel({
     swipe.current = null
     if (!g || !el || g.axis !== "x") return
     const w = el.offsetWidth
-    const velocity = g.dx / Math.max(1, e.timeStamp - g.t0) // px/ms, mansiy = sol terepke
+    const velocity = (g.dx * side) / Math.max(1, e.timeStamp - g.t0) // px/ms, musbet = yépilish terepke
     el.style.transition = "transform 180ms cubic-bezier(0.33, 1, 0.68, 1)"
-    if (g.dx < -w * 0.3 || velocity < -0.5) {
-      el.style.transform = `translateX(-${w}px)`
+    if (g.dx * side > w * 0.3 || velocity > 0.5) {
+      el.style.transform = `translateX(${side * w}px)`
       window.setTimeout(() => onOpenChange(false), 150)
     } else {
       el.style.transform = "translateX(0)"
@@ -126,11 +130,15 @@ export function SidePanel({
           onPointerMove={swipeMove}
           onPointerUp={swipeEnd}
           onPointerCancel={swipeEnd}
-          dir="rtl"
+          dir={dir}
           style={{ "--panel-w": `${width}px` } as React.CSSProperties}
           className={cn(
-            "fixed inset-y-0 left-0 z-50 flex h-full w-[min(var(--panel-w),90vw)] touch-pan-y flex-col bg-popover text-popover-foreground shadow-2xl outline-none max-sm:w-full",
-            "border-e transition duration-250 ease-[cubic-bezier(0.33,1,0.68,1)] data-ending-style:-translate-x-full data-starting-style:-translate-x-full"
+            rtl ? "left-0" : "right-0",
+            "fixed inset-y-0 z-50 flex h-full w-[min(var(--panel-w),90vw)] touch-pan-y flex-col bg-popover text-popover-foreground shadow-2xl outline-none max-sm:w-full",
+            "transition duration-250 ease-[cubic-bezier(0.33,1,0.68,1)]",
+            rtl
+              ? "border-e data-ending-style:-translate-x-full data-starting-style:-translate-x-full"
+              : "border-s data-ending-style:translate-x-full data-starting-style:translate-x-full"
           )}
         >
           <header className={cn("relative shrink-0 space-y-2 border-b px-5 pt-5 pb-4 pe-14", headerClassName)}>
@@ -156,7 +164,10 @@ export function SidePanel({
             aria-valuenow={width}
             tabIndex={0}
             title={t.panel.resize}
-            className="group absolute inset-y-0 right-0 z-10 w-2 cursor-col-resize touch-none outline-none max-sm:hidden"
+            className={cn(
+              "group absolute inset-y-0 z-10 w-2 cursor-col-resize touch-none outline-none max-sm:hidden",
+              rtl ? "right-0" : "left-0"
+            )}
             onPointerDown={(e) => {
               if (e.button !== 0) return
               e.currentTarget.setPointerCapture(e.pointerId)
@@ -165,7 +176,7 @@ export function SidePanel({
             onPointerMove={(e) => {
               if (!dragging.current) return
               if (!(e.buttons & 1)) return end()
-              apply(e.clientX) // panel sol kéniridin bashlanghachqa, kenglik = chashqanning X orni
+              apply(rtl ? e.clientX : window.innerWidth - e.clientX) // kenglik = panelning sirtqi kénidin chashqanghiche
             }}
             onPointerUp={end}
             onPointerCancel={end}
@@ -174,7 +185,7 @@ export function SidePanel({
             onKeyDown={(e) => {
               if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return
               e.preventDefault()
-              apply(widthRef.current + (e.key === "ArrowRight" ? 24 : -24))
+              apply(widthRef.current + (e.key === (rtl ? "ArrowRight" : "ArrowLeft") ? 24 : -24))
               saveWidth(widthRef.current)
             }}
           >
