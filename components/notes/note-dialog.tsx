@@ -1,6 +1,5 @@
 "use client"
 
-import { paragraphAt, paragraphDir } from "@/lib/bidi"
 import * as React from "react"
 import { format, parseISO } from "date-fns"
 import { AlignLeft, Check, CalendarDays, CheckSquare, FileText, Flag, Folder, Hash, Layers, Link2, Paperclip, Palette, Plus, Type, X, Activity } from "lucide-react"
@@ -20,12 +19,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import { t } from "@/lib/i18n"
 import { ug } from "@/lib/ug"
 import { useNotes } from "@/lib/notes-store"
 import { useWorkspaces } from "@/lib/workspaces-store"
+import { RichTextarea } from "./rich-textarea"
 import { WorkspaceEditor } from "./workspace-editor"
 import { deleteBlobs, putBlob, useBlobUrl } from "@/lib/blobs"
 import { compressImage } from "@/lib/image"
@@ -113,7 +112,6 @@ function NoteForm({
   const n = target.note
   const [title, setTitle] = React.useState(n?.title ?? "")
   const [content, setContent] = React.useState(n?.content ?? "")
-  const [caret, setCaret] = React.useState(0)
   const workspaces = useWorkspaces()
   const [workspaceId, setWorkspaceId] = React.useState<string | undefined>(n ? n.workspaceId : target.workspaceId)
   const [category, setCategory] = React.useState(n?.category ?? "")
@@ -220,14 +218,7 @@ function NoteForm({
           <Input value={title} onChange={(e) => setTitle(ug(e.target.value))} autoFocus />
         </Field>
         <Field label={t.form.content} icon={<AlignLeft />}>
-          <Textarea
-            value={content}
-            dir={paragraphDir(paragraphAt(content, caret))}
-            className="text-start"
-            onChange={(e) => { setContent(ug(e.target.value)); setCaret(e.currentTarget.selectionStart) }}
-            onSelect={(e) => setCaret(e.currentTarget.selectionStart)}
-            rows={4}
-          />
+          <RichTextarea value={content} onChange={setContent} />
         </Field>
 
         <div className="grid gap-4 sm:grid-cols-2">

@@ -2,7 +2,7 @@
 
 import { Paragraphs } from "./paragraphs"
 import * as React from "react"
-import { CalendarDays, Eye, Link2, Paperclip, MoreVertical, Pencil, Trash2, ArrowRightLeft } from "lucide-react"
+import { Archive, CalendarDays, Check, Eye, Layers, Link2, Paperclip, MoreVertical, Pencil, Trash2, ArrowRightLeft } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
@@ -21,6 +21,7 @@ import { isOverdue, progressOf } from "@/lib/filters"
 import { useShell } from "./app-shell"
 import { useNotes } from "@/lib/notes-store"
 import { NOTE_COLORS, PRIORITY_VISUAL, STATUSES, noteColor, type Note } from "@/lib/types"
+import { useWorkspaces } from "@/lib/workspaces-store"
 import { WorkspaceBadge } from "./workspace-badge"
 
 export const priorityStyle: Record<string, string> = {
@@ -39,8 +40,13 @@ export function NoteMenu({
   onEdit: (n: Note) => void
   onDelete: (n: Note) => void
 }) {
-  const { move } = useNotes()
+  const { move, update } = useNotes()
   const { open } = useShell()
+  const workspaces = useWorkspaces()
+  const wsOptions = [
+    { id: undefined as string | undefined, emoji: "∅", name: t.actions.noWorkspace },
+    ...workspaces.map((w) => ({ id: w.id as string | undefined, emoji: w.emoji ?? "📁", name: w.name })),
+  ]
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -71,8 +77,29 @@ export function NoteMenu({
             ))}
           </DropdownMenuSubContent>
         </DropdownMenuSub>
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>
+            <Layers /> {t.actions.changeWorkspace}
+          </DropdownMenuSubTrigger>
+          <DropdownMenuSubContent>
+            {wsOptions.map((w) => {
+              const current = (note.workspaceId ?? undefined) === w.id
+              return (
+                <DropdownMenuItem
+                  key={w.id ?? "none"}
+                  disabled={current}
+                  onClick={() => update(note.id, { workspaceId: w.id })}
+                >
+                  <span aria-hidden className="w-5 text-center">{w.emoji}</span>
+                  <span className="min-w-0 flex-1 truncate" dir="auto">{w.name}</span>
+                  {current && <Check className="ms-auto" />}
+                </DropdownMenuItem>
+              )
+            })}
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
         <DropdownMenuItem variant="destructive" onClick={() => onDelete(note)}>
-          <Trash2 /> {t.actions.delete}
+          {note.archivedAt ? <Trash2 /> : <Archive />} {note.archivedAt ? t.archive.deletePermanent : t.actions.archive}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

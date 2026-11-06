@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { t } from "@/lib/i18n"
 import type { Note, ViewMode } from "@/lib/types"
 import { useWorkspaces } from "@/lib/workspaces-store"
+import { stripMarkdown } from "@/lib/richtext"
 
 export function CommandSearch({
   open,
@@ -92,7 +93,7 @@ export function CommandSearch({
                   ]}
                   onSelect={run(() => onOpenNote(n))}
                 >
-                  <span className="truncate">{n.title || n.content?.slice(0, 60) || t.untitled}</span>
+                  <span className="truncate">{n.title || stripMarkdown(n.content ?? "").slice(0, 60) || t.untitled}</span>
                   <span className="ms-auto text-xs text-muted-foreground">{t.statuses[n.status]}</span>
                 </CommandItem>
               ))}

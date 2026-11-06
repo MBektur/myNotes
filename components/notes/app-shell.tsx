@@ -5,15 +5,6 @@ import { ViewTransition } from "react"
 import dynamic from "next/dynamic"
 import { usePathname, useRouter } from "next/navigation"
 import { toast } from "sonner"
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import { Button } from "@/components/ui/button"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { useAuth } from "@/components/auth/auth-gate"
 import { t } from "@/lib/i18n"
@@ -25,6 +16,7 @@ import { useWorkspaces } from "@/lib/workspaces-store"
 import type { Note, Status, ViewMode } from "@/lib/types"
 import { AppHeader } from "./app-header"
 import { AppSidebar } from "./app-sidebar"
+import { DeleteFlow } from "./archive-dialogs"
 import { useImportExport } from "./import-export"
 import { useScheduleIo } from "./schedule-io"
 import { MobileBottomNav } from "./mobile-bottom-nav"
@@ -58,7 +50,7 @@ export function useShell() {
 }
 
 function Inner({ children }: { children: React.ReactNode }) {
-  const { notes, hydrated, remove, importMerge } = useNotes()
+  const { notes, archived, hydrated, importMerge } = useNotes()
   const { logout } = useAuth()
   const workspaces = useWorkspaces()
   const router = useRouter()
@@ -114,6 +106,7 @@ function Inner({ children }: { children: React.ReactNode }) {
   const onNotesPage = pathname.startsWith("/notes")
   const onAbout = pathname.startsWith("/about")
   const onSchedule = pathname.startsWith("/schedule")
+  const onArchive = pathname.startsWith("/archive")
 
   const ctx: Shell = {
     filters, setFilters, sortBy, setSortBy, view, setView, visible,
@@ -125,6 +118,7 @@ function Inner({ children }: { children: React.ReactNode }) {
       <SidebarProvider>
         <AppSidebar
           notes={notes}
+          archivedCount={archived.length}
           onExport={doExport}
           onExportCsv={doExportCsv}
           onDemo={loadDemo}
@@ -135,8 +129,8 @@ function Inner({ children }: { children: React.ReactNode }) {
         <SidebarInset className="app-bg min-w-0 bg-transparent">
           <div className="flex flex-1 flex-col gap-4 p-4 pb-32 md:p-6">
             <AppHeader
-              title={onNotesPage ? t.notes : onSchedule ? t.schedule.title : onAbout ? t.about.title : pathname.startsWith("/calendar") ? t.calendar.title : t.dashboard.greeting}
-              subtitle={onNotesPage ? undefined : onSchedule ? t.schedule.subtitle : onAbout ? t.about.subtitle : pathname.startsWith("/calendar") ? t.calendar.subtitle : t.dashboard.subtitle}
+              title={onNotesPage ? t.notes : onArchive ? t.archive.title : onSchedule ? t.schedule.title : onAbout ? t.about.title : pathname.startsWith("/calendar") ? t.calendar.title : t.dashboard.greeting}
+              subtitle={onNotesPage ? undefined : onArchive ? t.archive.subtitle : onSchedule ? t.schedule.subtitle : onAbout ? t.about.subtitle : pathname.startsWith("/calendar") ? t.calendar.subtitle : t.dashboard.subtitle}
               overdue={notes.filter(isOverdue).length}
               onBell={() => {
                 setFilters({ ...emptyFilters, deadline: "overdue" })
@@ -185,26 +179,7 @@ function Inner({ children }: { children: React.ReactNode }) {
         {importUi}
         {scheduleIo.ui}
 
-        <AlertDialog open={!!toDelete} onOpenChange={(o) => !o && setToDelete(null)}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>{t.deleteConfirm.title}</AlertDialogTitle>
-              <AlertDialogDescription>{t.deleteConfirm.desc}</AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <Button variant="outline" onClick={() => setToDelete(null)}>{t.deleteConfirm.cancel}</Button>
-              <Button
-                variant="destructive"
-                onClick={() => {
-                  if (toDelete) remove(toDelete.id)
-                  setToDelete(null)
-                }}
-              >
-                {t.deleteConfirm.confirm}
-              </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <DeleteFlow note={toDelete} onClose={() => setToDelete(null)} />
       </SidebarProvider>
     </ShellCtx.Provider>
   )

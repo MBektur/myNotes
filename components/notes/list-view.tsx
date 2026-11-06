@@ -9,6 +9,7 @@ import { noteColor, type Note } from "@/lib/types"
 import { useShell } from "./app-shell"
 import { NoteMenu, openOnClick, priorityStyle } from "./note-card"
 import { WorkspaceBadge } from "./workspace-badge"
+import { stripMarkdown } from "@/lib/richtext"
 
 export function ListView({
   notes,
@@ -36,7 +37,7 @@ export function ListView({
               className="flex min-w-0 flex-1 flex-col gap-1 text-start sm:flex-row sm:items-center sm:gap-3"
             >
               <span className="min-w-0 flex-1 truncate font-medium">
-                {n.title || n.content?.slice(0, 80) || t.untitled}
+                {n.title || stripMarkdown(n.content ?? "").slice(0, 80) || t.untitled}
               </span>
               <span className="flex flex-wrap items-center gap-1.5 text-xs">
                 <WorkspaceBadge id={n.workspaceId} variant="outline" />

@@ -12,6 +12,7 @@ const noteSchema = z.object({
   content: z.string().optional(),
   category: z.string().optional(),
   workspaceId: z.string().optional(),
+  archivedAt: z.string().optional(),
   tags: z.array(z.string()).default([]),
   priority: z.enum(PRIORITIES).optional(),
   deadline: z.string().optional(),

@@ -18,7 +18,7 @@ import { useNotes } from "@/lib/notes-store"
 import { ensureWorkspacesByName, mergeWorkspaces, useWorkspaces } from "@/lib/workspaces-store"
 
 export function useImportExport() {
-  const { notes, importMerge, importReplace } = useNotes()
+  const { all: notes, importMerge, importReplace } = useNotes()
   const workspaces = useWorkspaces()
   const inputRef = React.useRef<HTMLInputElement>(null)
   const [pending, setPending] = React.useState<ImportData | null>(null)

@@ -29,6 +29,7 @@ const Emoji = ({ children }: { children: string }) => (
 
 export function AppSidebar({
   notes,
+  archivedCount,
   onExport,
   onExportCsv,
   onImport,
@@ -37,6 +38,7 @@ export function AppSidebar({
   schedule,
 }: {
   notes: Note[]
+  archivedCount: number
   onExport: () => void
   onExportCsv: () => void
   onImport: () => void
@@ -55,6 +57,7 @@ export function AppSidebar({
     { href: "/notes", emoji: "📝", label: t.notes, active: pathname.startsWith("/notes"), badge: notes.length },
     { href: "/calendar", emoji: "📅", label: t.dashboard.calendarNav, active: pathname.startsWith("/calendar") },
     { href: "/schedule", emoji: "🗓️", label: t.schedule.nav, active: pathname.startsWith("/schedule") },
+    { href: "/archive", emoji: "📦", label: t.archive.nav, active: pathname.startsWith("/archive"), badge: archivedCount },
     { href: "/about", emoji: "💜", label: t.about.nav, active: pathname.startsWith("/about") },
   ]
 

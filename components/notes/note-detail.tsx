@@ -3,7 +3,7 @@
 import { Paragraphs } from "./paragraphs"
 import * as React from "react"
 import { format, differenceInCalendarDays, parseISO } from "date-fns"
-import { Activity, AlignLeft, CalendarDays, CheckSquare, Flag, Hash, ExternalLink, FileText, Folder, ImageIcon, Layers, Link2, Palette, Pencil, Trash2, X } from "lucide-react"
+import { Activity, AlignLeft, Archive, CalendarDays, CheckSquare, Flag, Hash, ExternalLink, FileText, Folder, ImageIcon, Layers, Link2, Palette, Pencil, Trash2, X } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -17,6 +17,7 @@ import { useNotes } from "@/lib/notes-store"
 import { PRIORITY_VISUAL, STATUS_VISUAL, noteColor, type Attachment, type Note } from "@/lib/types"
 import { priorityStyle } from "./note-card"
 import { WorkspaceBadge } from "./workspace-badge"
+import { stripMarkdown } from "@/lib/richtext"
 
 function Section({
   title, icon, count, children,
@@ -311,8 +312,8 @@ export function NoteDetailPanel({
   onDelete: (n: Note) => void
 }) {
   // Canlı xatirini al (checklist özgirishi qatarliq yéngilinishlar üchün).
-  const { notes } = useNotes()
-  const live = note ? notes.find((n) => n.id === note.id) ?? null : null
+  const { all } = useNotes()
+  const live = note ? all.find((n) => n.id === note.id) ?? null : null
   // Panel yépilish animatsiyesi waqtida mezmun birdinla yoqap ketmisun
   const [kept, setKept] = React.useState<Note | null>(live)
   if (live && live !== kept) setKept(live)
@@ -344,7 +345,7 @@ export function NoteDetailPanel({
           </>
         )
       }
-      title={shown ? shown.title || (shown.content ? shown.content.slice(0, 60) : t.untitled) : null}
+      title={shown ? shown.title || (shown.content ? stripMarkdown(shown.content).slice(0, 60) : t.untitled) : null}
       description={
         shown && (
           <span className="tabular-nums">
@@ -357,7 +358,7 @@ export function NoteDetailPanel({
         shown && (
           <>
             <Button type="button" variant="ghost" className={cn(panelBtn, "me-auto text-red-600 hover:bg-red-500/10 hover:text-red-600 dark:text-red-400")} onClick={() => onDelete(shown)}>
-              <Trash2 /> {t.actions.delete}
+              {shown.archivedAt ? <Trash2 /> : <Archive />} {shown.archivedAt ? t.archive.deletePermanent : t.actions.archive}
             </Button>
             <Button type="button" className={panelBtn} onClick={() => onEdit(shown)}>
               <Pencil /> {t.actions.edit}

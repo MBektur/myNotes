@@ -4,7 +4,7 @@ import { ug } from "./ug"
 
 const COLUMNS = [
   "id", "title", "content", "workspace", "category", "tags", "status", "priority",
-  "deadline", "color", "links", "checklist", "createdAt", "updatedAt",
+  "deadline", "color", "links", "checklist", "createdAt", "updatedAt", "archivedAt",
 ] as const
 
 const esc = (v: string) => (/[",\n\r;]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v)
@@ -26,6 +26,7 @@ function row(n: Note, wsName: ReadonlyMap<string, string>): string[] {
     n.checklist.map((c) => `[${c.done ? "x" : " "}] ${c.text}`).join(";"),
     n.createdAt,
     n.updatedAt,
+    n.archivedAt ?? "",
   ]
 }
 
@@ -99,6 +100,7 @@ export function parseCsv(text: string): CsvResult | null {
       status: (STATUSES as readonly string[]).includes(status) ? (status as Note["status"]) : "todo",
       createdAt: get(r, "createdAt") || now,
       updatedAt: get(r, "updatedAt") || now,
+      archivedAt: get(r, "archivedAt") || undefined,
       title: ug(get(r, "title")) || undefined,
       content: ug(idx("content") >= 0 ? (r[idx("content")] ?? "") : "").trim() || undefined,
       category: ug(get(r, "category")) || undefined,

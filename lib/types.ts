@@ -57,6 +57,8 @@ export type Note = {
   content?: string
   category?: string
   workspaceId?: string
+  /** Toldurulghan bolsa xatire arshivta (Xatire/Panel/Teqwimde körünmeydu); arshivdin kéyin ghinasi mengguluk öchürülidu */
+  archivedAt?: string
   tags: string[]
   priority?: Priority
   deadline?: string

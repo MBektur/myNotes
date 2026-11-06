@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils"
 import { t } from "@/lib/i18n"
 import { isOverdue, todayStr } from "@/lib/filters"
 import { useNotes } from "@/lib/notes-store"
+import { stripMarkdown } from "@/lib/richtext"
 import { noteColor, type Note } from "@/lib/types"
 import { useWorkspaces } from "@/lib/workspaces-store"
 import { useShell } from "./app-shell"
@@ -25,7 +26,7 @@ const key = (d: Date) => format(d, "yyyy-MM-dd")
 const dayMonth = (d: Date) => `${d.getDate()}-${t.dashboard.months[d.getMonth()]}`
 const fullDate = (d: Date) => `${d.getFullYear()}-يىلى ${dayMonth(d)}`
 const wd = (d: Date) => t.calendar.weekdays[d.getDay()]
-const title = (n: Note) => n.title || n.content?.slice(0, 40) || t.untitled
+const title = (n: Note) => n.title || stripMarkdown(n.content ?? "").slice(0, 40) || t.untitled
 const isWeekend = (d: Date) => d.getDay() === 0 || d.getDay() === 6
 
 /* ---------- kichik bölekler ---------- */

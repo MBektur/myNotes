@@ -109,10 +109,19 @@ function notesReducer(state: Note[], a: Action): Note[] {
 }
 
 type Store = {
+  /** Peqet aktiv (arshivlanmighan) xatirilar: Xatire / Panel / Teqwim / izdesh shuni körüdu */
   notes: Note[]
+  /** Arshivlanghan xatirilar (yéngi arshivlanghini aldida) */
+  archived: Note[]
+  /** Hemmisi (aktiv + arshiv): export / import / workspace tazilash üchün */
+  all: Note[]
   hydrated: boolean
   add: (data: Partial<Note>) => Note
   update: (id: string, patch: Partial<Note>) => void
+  /** Arshivgha yötkeydu (öchürmeydu) */
+  archive: (id: string) => void
+  restore: (id: string) => void
+  /** Mengguluk öchüridu (peqet arshivdin chaqirilidu) */
   remove: (id: string) => void
   move: (id: string, status: Status) => void
   reorder: (items: { id: string; status: Status; order: number }[]) => void
@@ -286,7 +295,9 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
 
   const value = React.useMemo<Store>(
     () => ({
-      notes,
+      notes: notes.filter((n) => !n.archivedAt),
+      archived: notes.filter((n) => n.archivedAt).sort((a, b) => (b.archivedAt ?? "").localeCompare(a.archivedAt ?? "")),
+      all: notes,
       hydrated,
       add: (data) => {
         const now = new Date().toISOString()
@@ -304,6 +315,8 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
         return note
       },
       update: (id, patch) => dispatch({ type: "update", id, patch: normalizeNote(patch) }),
+      archive: (id) => dispatch({ type: "update", id, patch: { archivedAt: new Date().toISOString() } }),
+      restore: (id) => dispatch({ type: "update", id, patch: { archivedAt: undefined } }),
       remove: (id) => {
         deleteBlobs(notes.find((n) => n.id === id)?.attachments?.map((a) => a.id) ?? [])
         dispatch({ type: "remove", id })

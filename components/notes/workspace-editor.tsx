@@ -21,7 +21,7 @@ import { addWorkspace, removeWorkspace, updateWorkspace } from "@/lib/workspaces
 
 /** Workspace öchürüsh: aldi bilen notlardiki workspaceId boshitilidu (öchürülmeydu), andin workspace özi öchidu. */
 export function useDeleteWorkspace() {
-  const { notes, update } = useNotes()
+  const { all: notes, update } = useNotes()
   return React.useCallback(
     (id: string) => {
       for (const n of notes) if (n.workspaceId === id) update(n.id, { workspaceId: undefined })
@@ -52,7 +52,7 @@ export function WorkspaceEditor({
   onDeleted?: () => void
   className?: string
 }) {
-  const { notes } = useNotes()
+  const { all: notes } = useNotes()
   const deleteWorkspace = useDeleteWorkspace()
   const [open, setOpen] = React.useState(false)
   const [name, setName] = React.useState("")
