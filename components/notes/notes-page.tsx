@@ -1,6 +1,6 @@
 "use client"
 
-import { NotebookPen } from "lucide-react"
+import { NotebookPen, Plus } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { t } from "@/lib/i18n"
 import { useNotes } from "@/lib/notes-store"
@@ -39,6 +39,16 @@ export function NotesPage() {
       ) : (
         <ListView notes={visible} onEdit={edit} onDelete={askDelete} />
       )}
+
+      {/* Mobilde (<md) toolbar'daki "Yéngi xatire" yoshurun; shuning üchün alt gézish üstide ghulaq tügme */}
+      <button
+        type="button"
+        onClick={() => add()}
+        aria-label={t.newNote}
+        className="fixed end-4 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-40 flex size-10 items-center justify-center rounded-full bg-pink-400 text-white shadow-[0_6px_12px_-4px_oklch(0.6_0.2_5/0.6),inset_0_2px_2px_oklch(1_0_0/0.4)] transition-transform active:scale-95 md:hidden"
+      >
+        <Plus className="size-5" />
+      </button>
     </>
   )
 }
