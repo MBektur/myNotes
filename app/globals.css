@@ -229,18 +229,34 @@
   box-shadow: 0 6px 12px -6px oklch(0.5 0.14 295 / 0.4), inset 0 2px 2px oklch(1 0 0 / 0.4), inset 0 -3px 5px oklch(0.45 0.14 295 / 0.18);
 }
 
-/* Sehipe almishish: yumshaq solashturush (ViewTransition "page-fade") */
+/* Sehipe almishish: aldi bilen kona sehipe solishidu, andin yéngisi körünidu (ikkisi üst-üstige chüshmeydu) */
+::view-transition-group(.page-fade) {
+  animation: none; /* kona/yéngi sehipe égizliki ayrim bolsa, qatlamlar "sozulup" kétishining aldini alidu */
+}
+::view-transition-old(.page-fade),
+::view-transition-new(.page-fade) {
+  mix-blend-mode: normal; /* standart plus-lighter ikki qatlam bir waqitta körünse yoruq-qarangghu "hayalet" chiqiridu */
+}
 ::view-transition-old(.page-fade) {
-  animation: 80ms ease-out both page-fade-out;
+  animation: 70ms ease-out both page-fade-out;
 }
 ::view-transition-new(.page-fade) {
-  animation: 120ms ease-out both page-fade-in;
+  animation: 140ms ease-out 70ms both page-fade-in;
 }
 @keyframes page-fade-out {
   to { opacity: 0; }
 }
 @keyframes page-fade-in {
   from { opacity: 0; transform: translateY(6px); }
+}
+/* Telefonda animatsiyasiz, birdinla almishidu */
+@media (max-width: 767px) {
+  ::view-transition-group(.page-fade),
+  ::view-transition-old(.page-fade),
+  ::view-transition-new(.page-fade) {
+    animation: none !important;
+  }
+  ::view-transition-old(.page-fade) { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) {
