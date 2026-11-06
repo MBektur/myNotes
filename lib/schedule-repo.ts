@@ -59,26 +59,52 @@ export async function fetchSchedule(): Promise<ScheduleData | null> {
   return { people: p.data.map(personFromRow), lessons: l.data.map(lessonFromRow) }
 }
 
-async function replaceTable(table: string, rows: { id: string }[]) {
+type Row = { id: string }
+
+/** Yalghuz özgergen satirlarni yollaydu, öchürülgenlirini öchüridu (aldin sinxronlanghan holetke nisbeten). */
+async function diffTable(table: string, rows: Row[], prev: Row[]) {
   const db = supabase()
-  const existing = await db.from(table).select("id")
-  if (existing.error) throw existing.error
+  const before = new Map(prev.map((r) => [r.id, JSON.stringify(r)]))
   const keep = new Set(rows.map((r) => r.id))
-  const stale = existing.data.map((r: { id: string }) => r.id).filter((id) => !keep.has(id))
-  for (const c of chunks(rows)) {
-    const { error } = await db.from(table).upsert(c)
-    if (error) throw error
-  }
-  for (const c of chunks(stale)) {
-    const { error } = await db.from(table).delete().in("id", c)
-    if (error) throw error
+  const changed = rows.filter((r) => before.get(r.id) !== JSON.stringify(r))
+  const stale = prev.map((r) => r.id).filter((id) => !keep.has(id))
+  await Promise.all(
+    chunks(changed).map(async (c) => {
+      const { error } = await db.from(table).upsert(c)
+      if (error) throw error
+    })
+  )
+  return async () => {
+    await Promise.all(
+      chunks(stale).map(async (c) => {
+        const { error } = await db.from(table).delete().in("id", c)
+        if (error) throw error
+      })
+    )
   }
 }
 
-/** Uzaktaki programı verilen veriyle birebir eşitler. */
-export async function pushSchedule(data: ScheduleData) {
-  await replaceTable("schedule_people", data.people.map(personToRow))
-  await replaceTable("schedule_lessons", data.lessons.map(lessonToRow))
+async function replaceTable(table: string, rows: Row[]) {
+  const existing = await supabase().from(table).select("id")
+  if (existing.error) throw existing.error
+  const flush = await diffTable(table, rows, existing.data as Row[])
+  await flush()
+}
+
+const toRows = (d: ScheduleData) => ({ people: d.people.map(personToRow), lessons: d.lessons.map(lessonToRow) })
+
+/** Uzaktaki programni berilgen melumat bilen teng qilidu. `prev` bolsa peqet perqni yollaydu (tézrek). */
+export async function pushSchedule(data: ScheduleData, prev?: ScheduleData | null) {
+  const next = toRows(data)
+  if (!prev) {
+    await replaceTable("schedule_people", next.people)
+    await replaceTable("schedule_lessons", next.lessons)
+    return
+  }
+  const old = toRows(prev)
+  const flushPeople = await diffTable("schedule_people", next.people, old.people)
+  const flushLessons = await diffTable("schedule_lessons", next.lessons, old.lessons)
+  await Promise.all([flushLessons(), flushPeople()])
 }
 
 export const clearRemoteSchedule = () => pushSchedule({ people: [], lessons: [] })

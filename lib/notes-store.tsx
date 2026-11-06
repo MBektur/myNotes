@@ -230,10 +230,10 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
     })
 
     // Ishenchlik üchün: Realtime ishlimisa (mes. jadwel yayinigha qoshulmighan) yaki üzülüp qalsa, körünüp turghan sehipide
-    // 15 sékuntta bir qétim arqa pilanda yéngilaymiz. Özgirish bolmisa UI qayta sizilmaydu.
+    // 45 sékuntta bir qétim arqa pilanda yéngilaymiz. Özgirish bolmisa UI qayta sizilmaydu.
     const poll = window.setInterval(() => {
       if (document.visibilityState === "visible" && idle()) void load(false)
-    }, 15000)
+    }, 45000)
     const onVisible = () => {
       if (document.visibilityState === "visible" && idle()) void load(false)
     }
@@ -248,7 +248,10 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
 
   // Keshni yéngi holet bilen yéngilap turimiz (kéyinki achilishta tézla körünsun)
   React.useEffect(() => {
-    if (hydrated && uidRef.current) writeCache("notes", uidRef.current, notes)
+    if (!hydrated || !uidRef.current) return
+    const uid = uidRef.current
+    const id = window.setTimeout(() => writeCache("notes", uid, notes), 800)
+    return () => window.clearTimeout(id)
   }, [notes, hydrated])
 
   // Özgirishlerni (qoshush / yéngilash / öchürüsh) Supabase'ke yollash. Utuq yaki xata optimistik: UI aldin yéngilinidu.

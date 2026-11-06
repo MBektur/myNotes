@@ -226,10 +226,10 @@
 
 /* Sehipe almishish: yumshaq solashturush (ViewTransition "page-fade") */
 ::view-transition-old(.page-fade) {
-  animation: 120ms ease-out both page-fade-out;
+  animation: 80ms ease-out both page-fade-out;
 }
 ::view-transition-new(.page-fade) {
-  animation: 180ms ease-in 60ms both page-fade-in;
+  animation: 120ms ease-out both page-fade-in;
 }
 @keyframes page-fade-out {
   to { opacity: 0; }
