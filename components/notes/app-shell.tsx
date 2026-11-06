@@ -162,7 +162,7 @@ function Inner({ children }: { children: React.ReactNode }) {
           <div className="flex flex-1 flex-col gap-4 p-4 pb-32 md:p-6">
             <AppHeader
               title={onNotesPage ? t.notes : onArchive ? t.archive.title : onSchedule ? t.schedule.title : onAbout ? t.about.title : pathname.startsWith("/calendar") ? t.calendar.title : t.dashboard.greeting}
-              subtitle={onNotesPage ? undefined : onArchive ? t.archive.subtitle : onSchedule ? t.schedule.subtitle : onAbout ? t.about.subtitle : pathname.startsWith("/calendar") ? t.calendar.subtitle : t.dashboard.subtitle}
+              subtitle={onNotesPage ? t.notesSubtitle : onArchive ? t.archive.subtitle : onSchedule ? t.schedule.subtitle : onAbout ? t.about.subtitle : pathname.startsWith("/calendar") ? t.calendar.subtitle : t.dashboard.subtitle}
               overdue={notes.filter(isOverdue).length}
               onBell={() => {
                 setFilters({ ...emptyFilters, deadline: "overdue" })

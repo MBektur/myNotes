@@ -150,6 +150,7 @@ export const tr: Messages = {
   newNote: "Yeni not",
   editNote: "Notu düzenle",
   notes: "Notlar",
+  notesSubtitle: "Notlarınızı ve görevlerinizi yönetin",
   categories: "Kategoriler",
   workspaces: "Çalışma alanları",
   hashtags: "Etiketler",

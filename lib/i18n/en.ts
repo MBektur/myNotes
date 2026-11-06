@@ -150,6 +150,7 @@ export const en: Messages = {
   newNote: "New note",
   editNote: "Edit note",
   notes: "Notes",
+  notesSubtitle: "Manage your notes and tasks",
   categories: "Categories",
   workspaces: "Workspaces",
   hashtags: "Tags",

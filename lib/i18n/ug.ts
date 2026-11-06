@@ -151,6 +151,7 @@ export const ug = {
   newNote: "يېڭى خاتىرە",
   editNote: "خاتىرىنى تەھرىرلەش",
   notes: "خاتىرىلەر",
+  notesSubtitle: "خاتىرە ۋە ۋەزىپىلىرىڭىزنى باشقۇرۇڭ",
   categories: "كاتېگورىيەلەر",
   workspaces: "ئىش بوشلۇقى",
   hashtags: "خەتكۈچلەر",

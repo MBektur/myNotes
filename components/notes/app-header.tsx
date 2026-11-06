@@ -29,7 +29,7 @@ export function AppHeader({
       <SidebarTrigger className="clay size-10 shrink-0 rounded-2xl md:hidden" />
       <div className="min-w-0 flex-1">
         <h1 className="truncate text-3xl font-regular sm:text-4xl">{title}</h1>
-        {subtitle && <p className="truncate text-sm text-muted-foreground sm:text-base">{subtitle}</p>}
+        <p className="min-h-5 truncate text-sm text-muted-foreground sm:min-h-6 sm:text-base">{subtitle}</p>
       </div>
       <div className="relative order-last w-full sm:order-none sm:w-56 lg:w-64">
         <Search className="pointer-events-none absolute top-1/2 start-3.5 size-4 -translate-y-1/2 text-muted-foreground" />
