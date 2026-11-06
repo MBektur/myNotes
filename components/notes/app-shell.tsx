@@ -34,6 +34,7 @@ import type { DialogTarget } from "./note-dialog"
 // Aghir, hemme sehipide kerek bolmaydighan bölekler: chéqilghanda yüklinidu (dastlepki JS kichik bolsun).
 const NoteDetailPanel = dynamic(() => import("./note-detail").then((m) => m.NoteDetailPanel), { ssr: false })
 const NoteDialog = dynamic(() => import("./note-dialog").then((m) => m.NoteDialog), { ssr: false })
+const ReminderSettings = dynamic(() => import("./reminder-settings").then((m) => m.ReminderSettings), { ssr: false })
 const CommandSearch = dynamic(() => import("./command-search").then((m) => m.CommandSearch), { ssr: false })
 
 // Sehipe almishish animatsiyasi peqet keng ékranda (md+). Telefonda View Transition bashlansa, brauzér pütün sehipening
@@ -102,6 +103,7 @@ function Inner({ children }: { children: React.ReactNode }) {
   const [detail, setDetail] = React.useState<Note | null>(null)
   const [toDelete, setToDelete] = React.useState<Note | null>(null)
   const [cmdOpen, setCmdOpen] = React.useState(false)
+  const [remOpen, setRemOpen] = React.useState(false)
 
   const setView = (v: ViewMode) => {
     setViewState(v)
@@ -132,6 +134,37 @@ function Inner({ children }: { children: React.ReactNode }) {
   }
   const edit = (n: Note) => setTarget({ note: n })
   const open = (n: Note) => setDetail(n)
+
+  // Bildirishqa chékilghanda: /notes#note=<id> -> shu xatirini échish (sehipe achqanda we ochuq ilovida)
+  const notesRef = React.useRef(notes)
+  React.useEffect(() => {
+    notesRef.current = notes
+  })
+  const openFromHash = React.useCallback(() => {
+    const id = new URLSearchParams(window.location.hash.slice(1)).get("note")
+    if (!id) return
+    const n = notesRef.current.find((x) => x.id === id)
+    if (!n) return
+    setDetail(n)
+    history.replaceState(null, "", window.location.pathname + window.location.search)
+  }, [])
+  React.useEffect(() => {
+    if (hydrated) openFromHash()
+  }, [hydrated, notes.length, openFromHash])
+  React.useEffect(() => {
+    window.addEventListener("hashchange", openFromHash)
+    const onMsg = (e: MessageEvent) => {
+      if (e.data?.type !== "open-url" || typeof e.data.url !== "string") return
+      const u = new URL(e.data.url, window.location.origin)
+      if (u.pathname !== window.location.pathname) router.push(u.pathname + u.hash)
+      else if (u.hash) window.location.hash = u.hash
+    }
+    navigator.serviceWorker?.addEventListener("message", onMsg)
+    return () => {
+      window.removeEventListener("hashchange", openFromHash)
+      navigator.serviceWorker?.removeEventListener("message", onMsg)
+    }
+  }, [openFromHash, router])
   // Süzgüchte peqet bir workspace tallanghan bolsa, yéngi xatire shu workspace'ke chüshidu
   const add = (status?: Status, deadline?: string) =>
     setTarget({ status, deadline, workspaceId: filters.workspaces.length === 1 ? filters.workspaces[0] : undefined })
@@ -156,6 +189,7 @@ function Inner({ children }: { children: React.ReactNode }) {
           onDemo={loadDemo}
           onImport={pickFile}
           onLogout={logout}
+          onReminders={() => setRemOpen(true)}
           schedule={pathname.startsWith("/schedule") ? scheduleIo : undefined}
         />
         <SidebarInset className="app-bg min-w-0 bg-transparent">
@@ -195,6 +229,7 @@ function Inner({ children }: { children: React.ReactNode }) {
           }}
         />
         <NoteDialog target={target} onClose={() => setTarget(null)} />
+        {remOpen && <ReminderSettings open={remOpen} onOpenChange={setRemOpen} />}
         <CommandSearch
           open={cmdOpen}
           setOpen={setCmdOpen}

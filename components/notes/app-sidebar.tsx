@@ -3,7 +3,7 @@
 import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Download, FileSpreadsheet, LogOut, Moon, RotateCcw, Sparkles, Sun, Upload } from "lucide-react"
+import { BellRing, Download, FileSpreadsheet, LogOut, Moon, RotateCcw, Sparkles, Sun, Upload } from "lucide-react"
 import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
 import { Hint } from "@/components/ui/hint"
@@ -36,6 +36,7 @@ export function AppSidebar({
   onImport,
   onDemo,
   onLogout,
+  onReminders,
   schedule,
 }: {
   notes: Note[]
@@ -45,6 +46,7 @@ export function AppSidebar({
   onImport: () => void
   onDemo: () => void
   onLogout: () => void
+  onReminders: () => void
   /** /schedule sehipiside import/export schedulege baghlinidu */
   schedule?: { pickFile: () => void; doExport: () => void; doReset: () => void }
 }) {
@@ -106,7 +108,7 @@ export function AppSidebar({
           <p className="text-xs leading-relaxed text-foreground/70">{t.dashboard.motivation}</p>
         </div>
         <LanguageSwitcher />
-        <div className="flex items-center justify-between px-1">
+        <div className="flex items-center gap-0.5 px-1">
           {[
             ...(schedule
               ? [
@@ -120,6 +122,7 @@ export function AppSidebar({
                 { label: `${t.io.import} (${t.io.importHint})`, icon: <Upload />, onClick: onImport },
                 { label: t.dashboard.loadDemoUi, icon: <Sparkles />, onClick: onDemo },
               ]),
+            { label: t.reminders.nav, icon: <BellRing />, onClick: () => { close(); onReminders() } },
             {
               label: t.theme.toggle,
               icon: (
@@ -132,12 +135,12 @@ export function AppSidebar({
             },
             { label: t.logout, icon: <LogOut />, onClick: onLogout },
           ].map((a, i, all) => (
-            <Hint key={a.label} label={a.label} side="top" align={i === 0 ? "start" : i === all.length - 1 ? "end" : "center"}>
+            <Hint key={a.label} className="min-w-0 flex-1" label={a.label} side="top" align={i === 0 ? "start" : i === all.length - 1 ? "end" : "center"}>
               <Button
                 variant="ghost"
                 size="icon"
                 aria-label={a.label}
-                className="rounded-xl hover:bg-white/60 dark:hover:bg-white/10"
+                className="h-8 w-full min-w-0 rounded-xl hover:bg-white/60 dark:hover:bg-white/10"
                 onClick={a.onClick}
               >
                 {a.icon}
