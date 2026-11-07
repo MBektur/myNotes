@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { format, parseISO } from "date-fns"
-import { AlignLeft, Check, CalendarDays, CheckSquare, FileText, Flag, Folder, Hash, Layers, Link2, Paperclip, Palette, Plus, Type, X, Activity } from "lucide-react"
+import { AlignLeft, Bell, Check, CalendarDays, CheckSquare, FileText, Flag, Folder, Hash, Layers, Link2, Paperclip, Palette, Plus, Type, X, Activity } from "lucide-react"
 import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -26,6 +26,7 @@ import { useNotes } from "@/lib/notes-store"
 import { useWorkspaces } from "@/lib/workspaces-store"
 import { RichTextarea } from "./rich-textarea"
 import { WorkspaceEditor } from "./workspace-editor"
+import { ReminderEditor } from "./reminder-editor"
 import { deleteBlobs, putBlob, useBlobUrl } from "@/lib/blobs"
 import { compressImage } from "@/lib/image"
 import {
@@ -40,6 +41,7 @@ import {
   type Note,
   type NoteColor,
   type Priority,
+  type Reminder,
   type Status,
 } from "@/lib/types"
 
@@ -119,6 +121,7 @@ function NoteForm({
   const [tagInput, setTagInput] = React.useState("")
   const [priority, setPriority] = React.useState<Priority | undefined>(n?.priority)
   const [deadline, setDeadline] = React.useState<string | undefined>(n?.deadline ?? target.deadline)
+  const [reminders, setReminders] = React.useState<Reminder[]>(n?.reminders ?? [])
   const [status, setStatus] = React.useState<Status>(n?.status ?? target.status ?? "todo")
   const [color, setColor] = React.useState<NoteColor | undefined>(n?.color)
   const [links, setLinks] = React.useState(n?.links ?? [])
@@ -187,6 +190,7 @@ function NoteForm({
       tags: finalTags,
       priority,
       deadline,
+      reminders: reminders.length ? reminders : undefined,
       status,
       color,
       links: links.filter((l) => l.url.trim()),
@@ -375,6 +379,10 @@ function NoteForm({
             </div>
           </Field>
         </div>
+
+        <Field label={t.alarm.label} icon={<Bell />}>
+          <ReminderEditor value={reminders} onChange={setReminders} deadline={deadline} />
+        </Field>
 
         <Field label={t.form.tags} icon={<Hash />}>
           <div className="flex flex-wrap items-center gap-1.5 rounded-lg border border-input p-1.5">

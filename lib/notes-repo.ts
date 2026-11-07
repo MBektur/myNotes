@@ -1,5 +1,6 @@
 import { supabase } from "./supabase/client"
 import type { Note } from "./types"
+import { parseReminders } from "@/supabase/functions/send-reminders/occurrence"
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export function rowToNote(r: any): Note {
@@ -16,6 +17,7 @@ export function rowToNote(r: any): Note {
     tags: r.tags ?? [],
     priority: r.priority ?? undefined,
     deadline: r.deadline ?? undefined,
+    reminders: r.reminders?.length ? parseReminders(r.reminders) : undefined,
     links: r.links ?? [],
     checklist: r.checklist ?? [],
     attachments: r.attachments?.length ? r.attachments : undefined,
@@ -36,6 +38,7 @@ export function noteToRow(n: Note) {
     tags: n.tags,
     priority: n.priority ?? null,
     deadline: n.deadline ?? null,
+    reminders: n.reminders ?? [],
     color: n.color ?? null,
     sort_order: n.order ?? null,
     links: n.links,

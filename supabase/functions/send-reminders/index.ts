@@ -1,12 +1,14 @@
 // Supabase Edge Function (Deno). Ikki xil chaqirilidu:
-//  1) pg_cron: `x-cron-secret` bashliqi bilen, her 10 minutta -> waqti kelgen hatirlatmilarni yollaydu.
+//  1) pg_cron: `x-cron-secret` bashliqi bilen, her minutta -> waqti kelgen hatirlatmilarni yollaydu
+//     (son kün hatirlatmiliri: due.ts; nota xas alarm'lar: occurrence.ts).
 //  2) Kirgen kullanghuchi: `Authorization: Bearer <user jwt>` + body {"test": true} -> shu kullanghuchining qurilmilirigha sinaq bildirishi.
 // Deploy: supabase functions deploy send-reminders --no-verify-jwt   (JWT'ni özimiz tekshürimiz)
 // Secrets: VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT (mailto:...), CRON_SECRET
 import { createClient } from "npm:@supabase/supabase-js@2"
 import webpush from "npm:web-push@3.6.7"
-import { computeDue, dropLogged, mostUrgent, type ReminderSettings } from "./due.ts"
-import { buildMessage, testMessage, type Locale } from "./messages.ts"
+import { computeDue, dropLogged, mostUrgent, type ReminderNote, type ReminderSettings } from "./due.ts"
+import { buildMessage, buildNoteReminders, testMessage, type Locale } from "./messages.ts"
+import { computeNoteDue } from "./occurrence.ts"
 
 const env = (k: string) => Deno.env.get(k) ?? ""
 const db = createClient(env("SUPABASE_URL"), env("SUPABASE_SERVICE_ROLE_KEY"), { auth: { persistSession: false } })
@@ -65,6 +67,78 @@ async function runTest(jwt: string) {
   return json({ sent: ok ? 1 : 0 })
 }
 
+type Row = Record<string, string | number>
+const keyOf = (r: Row, keys: string[]) => keys.map((k) => String(r[k])).join("|")
+
+/** "Sahiplinish": log'qa yazalmighanlar (bashqa bir chaqirish aldin alghan) tashlinidu -> qosh bildirish bolmaydu. */
+async function claim<T extends Row>(table: string, conflict: string, rows: T[]): Promise<T[]> {
+  const keys = conflict.split(",")
+  const { data, error } = await db.from(table).upsert(rows as Row[], { onConflict: conflict, ignoreDuplicates: true }).select(conflict)
+  if (error) throw error
+  const got = new Set(((data ?? []) as unknown as Row[]).map((r) => keyOf(r, keys)))
+  return rows.filter((r) => got.has(keyOf(r, keys)))
+}
+
+/** Hechqaysi qurulmigha barmidi: log'ni qaytip alimiz, kéyinki chaqirishta yene urunup köridu */
+async function unclaim(table: string, rows: Row[]) {
+  for (const r of rows) await db.from(table).delete().match(r)
+}
+
+type NoteRow = { id: string; title: string | null; deadline: string | null; reminders: unknown }
+
+/** Son kün hatirlatmiliri (hésab ayari: N kün burun). Yollanghan not sanini qaytiridu. */
+async function sendDeadlineReminders(userId: string, settings: ReminderSettings, notes: NoteRow[], subs: Sub[], now: Date) {
+  const withDeadline = notes.filter((n): n is NoteRow & { deadline: string } => !!n.deadline)
+  let due = computeDue(withDeadline, settings, now)
+  if (!due.length) return 0
+
+  const { data: logs, error } = await db
+    .from("reminder_log")
+    .select("note_id,deadline,offset_days")
+    .eq("user_id", userId)
+    .in("note_id", [...new Set(due.map((d) => d.noteId))])
+  if (error) throw error
+  due = dropLogged(due, new Set((logs ?? []).map((l) => `${l.note_id}|${l.deadline}|${l.offset_days}`)))
+  if (!due.length) return 0
+
+  const rows = due.map((d) => ({ user_id: userId, note_id: d.noteId, deadline: d.deadline, offset_days: d.offset }))
+  const claimed = await claim("reminder_log", "user_id,note_id,deadline,offset_days", rows)
+  if (!claimed.length) return 0
+
+  const titles = new Map(notes.map((n) => [n.id, n.title]))
+  const mine = claimed.map((c) => ({ noteId: c.note_id, deadline: c.deadline, offset: c.offset_days }))
+  const items = [...mostUrgent(mine)].map(([id, offset]) => ({ id, title: titles.get(id) ?? null, offset }))
+  if (await pushTo(subs, (locale) => buildMessage(items, locale))) return items.length
+  await unclaim("reminder_log", claimed)
+  return 0
+}
+
+/** Nota xas hatirlatmilar (alarm: waqit + tekrar). Yollanghan not sanini qaytiridu. */
+async function sendNoteReminders(userId: string, tz: string, notes: NoteRow[], subs: Sub[], now: Date) {
+  const due = computeNoteDue(notes, tz, now)
+  if (!due.length) return 0
+
+  const rows = due.map((d) => ({ user_id: userId, note_id: d.noteId, reminder_id: d.reminderId, fire_at: d.fireAt }))
+  const claimed = await claim("note_reminder_log", "user_id,note_id,reminder_id,fire_at", rows)
+  if (!claimed.length) return 0
+
+  const byId = new Map(notes.map((n) => [n.id, n]))
+  const items = [...new Set(claimed.map((c) => c.note_id))].map((id) => ({
+    id,
+    title: byId.get(id)?.title ?? null,
+    deadline: byId.get(id)?.deadline ?? null,
+  }))
+  // Her bir bildirish ayrim yollinidu (sani til'gha baghliq emes); birsila ötse "yollandi" dep hésablaymiz
+  let ok = false
+  const count = buildNoteReminders(items, "ug").length
+  for (let i = 0; i < count; i++) {
+    if (await pushTo(subs, (l) => buildNoteReminders(items, l)[i])) ok = true
+  }
+  if (ok) return items.length
+  await unclaim("note_reminder_log", claimed)
+  return 0
+}
+
 async function runCron() {
   const now = new Date()
   const { data: all, error } = await db.from("reminder_settings").select("user_id,offsets,send_time,tz").eq("enabled", true)
@@ -74,52 +148,28 @@ async function runCron() {
   for (const row of all ?? []) {
     try {
       const settings: ReminderSettings = { offsets: row.offsets ?? [], sendTime: row.send_time, tz: row.tz }
-      const { data: notes, error: ne } = await db
+      const { data, error: ne } = await db
         .from("notes")
-        .select("id,title,deadline")
+        .select("id,title,deadline,reminders")
         .eq("user_id", row.user_id)
         .is("archived_at", null)
         .neq("status", "done")
-        .not("deadline", "is", null)
       if (ne) throw ne
-      let due = computeDue(notes ?? [], settings, now)
-      if (!due.length) continue
+      const notes = ((data ?? []) as NoteRow[]).filter((n) => n.deadline || (Array.isArray(n.reminders) && n.reminders.length))
+      if (!notes.length) continue
 
-      const { data: logs, error: le } = await db
-        .from("reminder_log")
-        .select("note_id,deadline,offset_days")
-        .eq("user_id", row.user_id)
-        .in("note_id", [...new Set(due.map((d) => d.noteId))])
-      if (le) throw le
-      due = dropLogged(due, new Set((logs ?? []).map((l) => `${l.note_id}|${l.deadline}|${l.offset_days}`)))
-      if (!due.length) continue
+      // Her minutta chaqirilidu: héchnerse waqti kelmigen bolsa qurulmilarni oqumaymiz
+      const anyDue =
+        computeDue(notes.filter((n) => n.deadline) as ReminderNote[], settings, now).length > 0 || computeNoteDue(notes, row.tz, now).length > 0
+      if (!anyDue) continue
 
       const subs = await subsOf(row.user_id)
       if (!subs.length) continue // cihaz yoq: log yazmaymiz, kéyin abone bolsa yollanidu
 
-      // "Sahiplinish": log'qa yazalmighanlar (bashqa bir chaqirish aldin yollighan) tashlinidu -> qosh bildirish bolmaydu
-      const { data: claimed, error: ce } = await db
-        .from("reminder_log")
-        .upsert(
-          due.map((d) => ({ user_id: row.user_id, note_id: d.noteId, deadline: d.deadline, offset_days: d.offset })),
-          { onConflict: "user_id,note_id,deadline,offset_days", ignoreDuplicates: true },
-        )
-        .select("note_id,deadline,offset_days")
-      if (ce) throw ce
-      if (!claimed?.length) continue
-      const mine = due.filter((d) => claimed.some((c) => c.note_id === d.noteId && c.deadline === d.deadline && c.offset_days === d.offset))
-
-      const titles = new Map((notes ?? []).map((n) => [n.id, n.title as string | null]))
-      const items = [...mostUrgent(mine)].map(([id, offset]) => ({ id, title: titles.get(id) ?? null, offset }))
-      const ok = await pushTo(subs, (locale) => buildMessage(items, locale))
-      if (ok) {
+      const n = (await sendDeadlineReminders(row.user_id, settings, notes, subs, now)) + (await sendNoteReminders(row.user_id, row.tz, notes, subs, now))
+      if (n) {
         sentUsers++
-        sentNotes += items.length
-      } else {
-        // Hechqaysi qurulmigha barmidi: log'ni qaytip alimiz, kéyinki chaqirishta yene urunup köridu
-        for (const d of mine) {
-          await db.from("reminder_log").delete().match({ user_id: row.user_id, note_id: d.noteId, deadline: d.deadline, offset_days: d.offset })
-        }
+        sentNotes += n
       }
     } catch (e) {
       console.error("user failed", row.user_id, (e as Error).message) // bir kullanghuchi bashqilarni toxtatmisun

@@ -303,6 +303,23 @@ export const ug = {
     noKey: "مۇلازىمېتىر تەڭشىكى تولۇق ئەمەس (VAPID).",
     error: "خاتالىق كۆرۈلدى",
   },
+  alarm: {
+    label: "ئەسكەرتىشلەر",
+    add: "ئەسكەرتىش قوشۇش",
+    remove: "ئەسكەرتىشنى ئۆچۈرۈش",
+    repeat: "تەكرارلاش",
+    repeats: { none: "تەكرارلانمايدۇ", daily: "ھەر كۈنى", weekly: "ھەر ھەپتە", monthly: "ھەر ئاي", custom: "باشقا…" },
+    every: "ھەر",
+    units: { hour: "سائەت", day: "كۈن", week: "ھەپتە", month: "ئاي" },
+    everyN: (n: number, u: "hour" | "day" | "week" | "month") =>
+      `ھەر ${n} ${{ hour: "سائەتتە", day: "كۈندە", week: "ھەپتىدە", month: "ئايدا" }[u]}`,
+    tomorrow: (time: string) => `ئەتە ${time}`,
+    fromDeadline: "مۇددەتتىن:",
+    next: "كېيىنكىسى",
+    past: "بۇ ۋاقىت ئۆتۈپ كەتتى",
+    pushOff: "بۇ ئۈسكۈنىدە ئۇقتۇرۇش تاقاق. تىزىملىكتىن «ئەسكەرتىش» نى ئېچىڭ.",
+    limit: (n: number) => `ئەڭ كۆپ بولغاندا ${n} ئەسكەرتىش`,
+  },
   archive: {
     nav: "ئارخىپ",
     title: "ئارخىپ",

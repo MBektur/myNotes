@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Status
 
-Notes/kanban/calendar/schedule app (Uyghur UI, RTL). Data lives in **Supabase** (Postgres + Storage + Auth); schema in `supabase/migrations/0001_init.sql`, env vars in `.env.example`. Browser-only client (`lib/supabase/client.ts`), no server client/proxy: access is protected by RLS. Notes sync = optimistic reducer + snapshot diff in `lib/notes-store.tsx` (+ realtime); schedule in `lib/schedule-store.ts`; workspaces (üst kategori, notes.workspace_id; migration `0003_workspaces.sql`) in `lib/workspaces-store.ts`; attachments in `lib/blobs.ts` (Storage, IndexedDB as cache). UI prefs (view/sort/filters) stay in localStorage. No test runner.
+Notes/kanban/calendar/schedule app (Uyghur UI, RTL). Data lives in **Supabase** (Postgres + Storage + Auth); schema in `supabase/migrations/0001_init.sql`, env vars in `.env.example`. Browser-only client (`lib/supabase/client.ts`), no server client/proxy: access is protected by RLS. Notes sync = optimistic reducer + snapshot diff in `lib/notes-store.tsx` (+ realtime); schedule in `lib/schedule-store.ts`; workspaces (üst kategori, notes.workspace_id; migration `0003_workspaces.sql`) in `lib/workspaces-store.ts`; attachments in `lib/blobs.ts` (Storage, IndexedDB as cache). Push reminders: account-wide deadline reminders (`0005_reminders.sql`, `due.ts`) plus per-note alarms in `notes.reminders` (`0006_note_reminders.sql`); both sent by `supabase/functions/send-reminders` via pg_cron. The occurrence logic in `supabase/functions/send-reminders/occurrence.ts` is shared with the client, so it must stay import-free. UI prefs (view/sort/filters) stay in localStorage. No test runner.
 
 ## Commands
 

@@ -16,6 +16,15 @@ const noteSchema = z.object({
   tags: z.array(z.string()).default([]),
   priority: z.enum(PRIORITIES).optional(),
   deadline: z.string().optional(),
+  reminders: z
+    .array(
+      z.object({
+        id: z.string(),
+        at: z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/),
+        repeat: z.object({ every: z.number().int().min(1).max(999), unit: z.enum(["hour", "day", "week", "month"]) }).optional(),
+      })
+    )
+    .optional(),
   links: z
     .array(z.object({ id: z.string(), url: z.string(), label: z.string().optional() }))
     .default([]),

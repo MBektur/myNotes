@@ -2,7 +2,7 @@
 
 import { Paragraphs } from "./paragraphs"
 import * as React from "react"
-import { Archive, CalendarDays, Check, Eye, Layers, Link2, Paperclip, MoreVertical, Pencil, Trash2, ArrowRightLeft } from "lucide-react"
+import { Archive, Bell, CalendarDays, Check, Eye, Layers, Link2, Paperclip, MoreVertical, Pencil, Trash2, ArrowRightLeft } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
@@ -238,7 +238,7 @@ export function NoteCard({
       )}
 
       <div className="mt-auto">
-      {(note.priority || note.deadline || note.links.length > 0 || !!note.attachments?.length) && (
+      {(note.priority || note.deadline || !!note.reminders?.length || note.links.length > 0 || !!note.attachments?.length) && (
         <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
           {note.priority && (
             <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-medium", priorityStyle[note.priority])}>
@@ -254,6 +254,11 @@ export function NoteCard({
               )}
             >
               <CalendarDays className="size-3.5" /> {note.deadline}
+            </span>
+          )}
+          {!!note.reminders?.length && (
+            <span className="inline-flex items-center gap-1 text-foreground/70" title={t.alarm.label} aria-label={t.alarm.label}>
+              <Bell className="size-3.5" /> {note.reminders.length > 1 && note.reminders.length}
             </span>
           )}
           {note.links.length > 0 && (

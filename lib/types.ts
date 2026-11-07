@@ -37,6 +37,10 @@ export type Attachment = {
   type: string
 }
 export type ChecklistItem = { id: string; text: string; done: boolean }
+// Nota xas hatirlatma (alarm). Hésablash: supabase/functions/send-reminders/occurrence.ts (server bilen ortaq)
+import type { ReminderRule } from "@/supabase/functions/send-reminders/occurrence"
+export type Reminder = ReminderRule
+export type { ReminderRepeat, ReminderUnit } from "@/supabase/functions/send-reminders/occurrence"
 
 /** Üst kategori: shexsiy / mektep / proyekt toplumi qatarliq. Notlar `workspaceId` arqiliq baghlinidu. */
 export type Workspace = {
@@ -62,6 +66,8 @@ export type Note = {
   tags: string[]
   priority?: Priority
   deadline?: string
+  /** Nota xas hatirlatmilar (waqit + tekrar); saet dilimi: reminder_settings.tz */
+  reminders?: Reminder[]
   links: NoteLink[]
   checklist: ChecklistItem[]
   attachments?: Attachment[]
@@ -99,6 +105,7 @@ export function isNoteEmpty(n: Partial<Note>) {
     !(n.tags?.length) &&
     !n.priority &&
     !n.deadline &&
+    !(n.reminders?.length) &&
     !(n.links?.length) &&
     !(n.checklist?.length) &&
     !(n.attachments?.length)

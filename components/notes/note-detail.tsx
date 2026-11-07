@@ -3,7 +3,7 @@
 import { Paragraphs } from "./paragraphs"
 import * as React from "react"
 import { format, differenceInCalendarDays, parseISO } from "date-fns"
-import { Activity, AlignLeft, Archive, CalendarDays, CheckSquare, Flag, Hash, ExternalLink, FileText, Folder, ImageIcon, Layers, Link2, Palette, Pencil, Trash2, X } from "lucide-react"
+import { Activity, AlignLeft, Archive, Bell, CalendarDays, CheckSquare, Flag, Hash, ExternalLink, FileText, Folder, ImageIcon, Layers, Link2, Palette, Pencil, Trash2, X } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -18,6 +18,7 @@ import { PRIORITY_VISUAL, STATUS_VISUAL, noteColor, type Attachment, type Note }
 import { priorityStyle } from "./note-card"
 import { WorkspaceBadge } from "./workspace-badge"
 import { stripMarkdown } from "@/lib/richtext"
+import { fromMin, nextOccurrence, toMin } from "@/supabase/functions/send-reminders/occurrence"
 
 function Section({
   title, icon, count, children,
@@ -217,6 +218,21 @@ function Detail({ note }: { note: Note }) {
                 {rel}
               </span>
             )}
+          </Prop>
+        )}
+        {!!note.reminders?.length && (
+          <Prop label={t.alarm.label} icon={<Bell />}>
+            <ul className="space-y-0.5 text-sm">
+              {note.reminders.map((r) => {
+                const next = nextOccurrence(r, toMin(format(new Date(), "yyyy-MM-dd'T'HH:mm"))!)
+                return (
+                  <li key={r.id} className={cn(next === null ? "text-muted-foreground line-through" : "text-foreground/80")}>
+                    <span dir="ltr" className="tabular-nums">{fromMin(next ?? toMin(r.at)!).replace("T", " ")}</span>
+                    {r.repeat && <span className="text-muted-foreground"> · {t.alarm.everyN(r.repeat.every, r.repeat.unit)}</span>}
+                  </li>
+                )
+              })}
+            </ul>
           </Prop>
         )}
         {note.workspaceId && (

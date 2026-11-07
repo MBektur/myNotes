@@ -1,4 +1,4 @@
-// Hatirlatma mantighi: saf fonksiyonlar (Deno'da da Node'da da ishleydu; I/O yoq).
+// Son kün hatirlatma mantighi: saf fonksiyonlar (Deno'da da Node'da da ishleydu; I/O yoq).
 // Test: node --test supabase/functions/send-reminders/due.test.ts
 
 export type ReminderNote = { id: string; title: string | null; deadline: string } // deadline: "yyyy-MM-dd"
@@ -8,25 +8,8 @@ export type Due = { noteId: string; deadline: string; offset: number }
 
 export const OVERDUE = -1
 
-/** Berilgen tz'dike yerlik sene-ay-kün ("yyyy-MM-dd") we kün ichidiki minut. */
-export function localParts(now: Date, tz: string): { date: string; minutes: number } {
-  let parts: Intl.DateTimeFormatPart[]
-  try {
-    parts = new Intl.DateTimeFormat("en-CA", {
-      timeZone: tz,
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      hourCycle: "h23",
-    }).formatToParts(now)
-  } catch {
-    return localParts(now, "UTC") // yaramsiz tz
-  }
-  const get = (t: string) => parts.find((p) => p.type === t)?.value ?? "00"
-  return { date: `${get("year")}-${get("month")}-${get("day")}`, minutes: Number(get("hour")) * 60 + Number(get("minute")) }
-}
+import { localParts } from "./occurrence.ts"
+export { localParts }
 
 export function addDays(date: string, n: number): string {
   const [y, m, d] = date.split("-").map(Number)
