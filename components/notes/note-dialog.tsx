@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { format, parseISO } from "date-fns"
-import { AlignLeft, Bell, Check, CalendarDays, CheckSquare, FileText, Flag, Folder, Hash, Layers, Link2, Paperclip, Palette, Plus, Type, X, Activity } from "lucide-react"
+import { AlignLeft, Bell, Check, CalendarDays, CheckSquare, ChevronDown, FileText, Flag, Folder, Hash, Layers, Link2, Paperclip, Palette, Plus, Type, X, Activity } from "lucide-react"
 import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -122,6 +122,7 @@ function NoteForm({
   const [priority, setPriority] = React.useState<Priority | undefined>(n?.priority)
   const [deadline, setDeadline] = React.useState<string | undefined>(n?.deadline ?? target.deadline)
   const [reminders, setReminders] = React.useState<Reminder[]>(n?.reminders ?? [])
+  const [remOpen, setRemOpen] = React.useState(reminders.length > 0) // hatirlatma bar bolsa échiq turidu
   const [status, setStatus] = React.useState<Status>(n?.status ?? target.status ?? "todo")
   const [color, setColor] = React.useState<NoteColor | undefined>(n?.color)
   const [links, setLinks] = React.useState(n?.links ?? [])
@@ -380,10 +381,6 @@ function NoteForm({
           </Field>
         </div>
 
-        <Field label={t.alarm.label} icon={<Bell />}>
-          <ReminderEditor value={reminders} onChange={setReminders} deadline={deadline} />
-        </Field>
-
         <Field label={t.form.tags} icon={<Hash />}>
           <div className="flex flex-wrap items-center gap-1.5 rounded-lg border border-input p-1.5">
             {tags.map((tag) => (
@@ -513,6 +510,28 @@ function NoteForm({
             </Button>
           </div>
         </Field>
+
+        <section className="rounded-xl border bg-muted/30">
+          <button
+            type="button"
+            onClick={() => setRemOpen((o) => !o)}
+            aria-expanded={remOpen}
+            aria-controls="note-reminders"
+            className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium hover:bg-muted/60"
+          >
+            <Bell className="size-4 text-muted-foreground" aria-hidden />
+            {t.alarm.label}
+            {reminders.length > 0 && (
+              <span className="rounded-full bg-primary/15 px-2 py-0.5 text-xs tabular-nums text-primary">{reminders.length}</span>
+            )}
+            <ChevronDown className={cn("ms-auto size-4 text-muted-foreground transition-transform", remOpen && "rotate-180")} aria-hidden />
+          </button>
+          {remOpen && (
+            <div id="note-reminders" className="border-t px-3 pt-2.5 pb-3">
+              <ReminderEditor value={reminders} onChange={setReminders} deadline={deadline} />
+            </div>
+          )}
+        </section>
       </div>
 
       <div className="flex shrink-0 justify-end gap-2.5 border-t bg-muted/60 px-5 py-4 max-sm:[&>button]:flex-1">
