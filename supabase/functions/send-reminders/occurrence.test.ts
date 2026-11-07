@@ -54,6 +54,18 @@ test("her 3 saatte", () => {
   assert.equal(next(r, "2026-11-08T02:30"), "2026-11-08T04:00")
 })
 
+test("her 15 dakikada", () => {
+  const r: ReminderRule = { id: "a", at: "2026-11-07T09:00", repeat: { every: 15, unit: "minute" } }
+  assert.equal(last(r, "2026-11-07T09:44"), "2026-11-07T09:30")
+  assert.equal(next(r, "2026-11-07T09:44"), "2026-11-07T09:45")
+  assert.equal(next(r, "2026-11-07T23:59"), "2026-11-08T00:00")
+})
+
+test("computeNoteDue: her dakika, sadece o dakika", () => {
+  const notes = [{ id: "n", reminders: [{ id: "m", at: "2026-11-07T09:00", repeat: { every: 1, unit: "minute" } }] }]
+  assert.deepEqual(computeNoteDue(notes, "UTC", new Date("2026-11-07T09:07:30Z")).map((d) => d.fireAt), ["2026-11-07T09:07"])
+})
+
 test("her 2 haftada", () => {
   const r: ReminderRule = { id: "a", at: "2026-11-02T10:00", repeat: { every: 2, unit: "week" } }
   assert.equal(last(r, "2026-11-20T10:00"), "2026-11-16T10:00")

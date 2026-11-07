@@ -5,17 +5,17 @@
 // Waqitlar "yerlik tam saet" (wall clock) minuti bilen hésablinidu: "yyyy-MM-ddTHH:mm" -> Date.UTC/60000.
 // DST almashqanda bir saetlik siljish qobul qilinidu.
 
-export type ReminderUnit = "hour" | "day" | "week" | "month"
+export type ReminderUnit = "minute" | "hour" | "day" | "week" | "month"
 export type ReminderRepeat = { every: number; unit: ReminderUnit }
 /** at: yerlik waqit "yyyy-MM-ddTHH:mm" (kullanghuchining saet dilimida) */
 export type ReminderRule = { id: string; at: string; repeat?: ReminderRepeat }
 
-export const REMINDER_UNITS: readonly ReminderUnit[] = ["hour", "day", "week", "month"]
+export const REMINDER_UNITS: readonly ReminderUnit[] = ["minute", "hour", "day", "week", "month"]
 export const MAX_REMINDERS = 10
 export const MAX_EVERY = 999
 
 const DAY = 24 * 60
-const UNIT_MIN: Record<ReminderUnit, number> = { hour: 60, day: DAY, week: 7 * DAY, month: 28 * DAY }
+const UNIT_MIN: Record<ReminderUnit, number> = { minute: 1, hour: 60, day: DAY, week: 7 * DAY, month: 28 * DAY }
 
 /** Berilgen tz'dike yerlik sene-ay-kün ("yyyy-MM-dd") we kün ichidiki minut. */
 export function localParts(now: Date, tz: string): { date: string; minutes: number } {

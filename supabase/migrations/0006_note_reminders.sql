@@ -1,5 +1,5 @@
 -- Nota xas hatirlatma (alarm): Dashboard > SQL Editor'da bir qétim ishlitiñ.
--- Her notta birnechche hatirlatma bolalaydu: [{ "id", "at": "yyyy-MM-ddTHH:mm" (yerlik), "repeat"?: { "every": N, "unit": "hour|day|week|month" } }]
+-- Her notta birnechche hatirlatma bolalaydu: [{ "id", "at": "yyyy-MM-ddTHH:mm" (yerlik), "repeat"?: { "every": N, "unit": "minute|hour|day|week|month" } }]
 -- Saet dilimi: reminder_settings.tz. Gönderici: supabase/functions/send-reminders (occurrence.ts).
 alter table public.notes add column if not exists reminders jsonb not null default '[]';
 

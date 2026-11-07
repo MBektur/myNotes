@@ -21,7 +21,7 @@ const noteSchema = z.object({
       z.object({
         id: z.string(),
         at: z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/),
-        repeat: z.object({ every: z.number().int().min(1).max(999), unit: z.enum(["hour", "day", "week", "month"]) }).optional(),
+        repeat: z.object({ every: z.number().int().min(1).max(999), unit: z.enum(["minute", "hour", "day", "week", "month"]) }).optional(),
       })
     )
     .optional(),

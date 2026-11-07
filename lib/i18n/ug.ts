@@ -319,9 +319,9 @@ export const ug = {
     repeat: "تەكرارلاش",
     repeats: { none: "تەكرارلانمايدۇ", daily: "ھەر كۈنى", weekly: "ھەر ھەپتە", monthly: "ھەر ئاي", custom: "باشقا…" },
     every: "ھەر",
-    units: { hour: "سائەت", day: "كۈن", week: "ھەپتە", month: "ئاي" },
-    everyN: (n: number, u: "hour" | "day" | "week" | "month") =>
-      `ھەر ${n} ${{ hour: "سائەتتە", day: "كۈندە", week: "ھەپتىدە", month: "ئايدا" }[u]}`,
+    units: { minute: "مىنۇت", hour: "سائەت", day: "كۈن", week: "ھەپتە", month: "ئاي" },
+    everyN: (n: number, u: "minute" | "hour" | "day" | "week" | "month") =>
+      `ھەر ${n} ${{ minute: "مىنۇتتا", hour: "سائەتتە", day: "كۈندە", week: "ھەپتىدە", month: "ئايدا" }[u]}`,
     tomorrow: (time: string) => `ئەتە ${time}`,
     fromDeadline: "مۇددەتتىن:",
     next: "كېيىنكىسى",

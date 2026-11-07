@@ -318,7 +318,7 @@ export const en: Messages = {
     repeat: "Repeat",
     repeats: { none: "Does not repeat", daily: "Every day", weekly: "Every week", monthly: "Every month", custom: "Custom…" },
     every: "Every",
-    units: { hour: "hour(s)", day: "day(s)", week: "week(s)", month: "month(s)" },
+    units: { minute: "minute(s)", hour: "hour(s)", day: "day(s)", week: "week(s)", month: "month(s)" },
     everyN: (n, u) => `Every ${n} ${u}${n === 1 ? "" : "s"}`,
     tomorrow: (time) => `Tomorrow ${time}`,
     fromDeadline: "Before deadline:",
