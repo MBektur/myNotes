@@ -12,6 +12,28 @@ type Mode = "signin" | "signup" | "forgot"
 
 const MIN_PASSWORD = 6
 
+/** Tizimlitish xatasini chüshinishlik qilip körsitidu; namelum xatada kodni qoshidu (sewebini tépish üchün). */
+function signUpError(code: string | undefined, message: string) {
+  switch (code) {
+    case "weak_password":
+      return t.login.weak
+    case "user_already_exists":
+    case "email_exists":
+      return t.login.alreadyExists
+    case "email_address_invalid":
+      return t.login.invalidEmail
+    case "over_email_send_rate_limit":
+    case "over_request_rate_limit":
+      return t.login.rateLimited
+    case "email_address_not_authorized":
+      return t.login.emailNotAllowed
+    case "signup_disabled":
+      return t.login.signUpDisabled
+    default:
+      return `${t.login.signUpFailed} (${code ?? message})`
+  }
+}
+
 export function LoginScreen() {
   const [mode, setMode] = React.useState<Mode>("signin")
   const [email, setEmail] = React.useState("")
@@ -39,7 +61,12 @@ export function LoginScreen() {
       if (mode === "signin") {
         const { error } = await auth.signInWithPassword({ email: addr, password })
         // Uğurluq bolsa AuthGate onAuthStateChange arqiliq özi yéngilinidu
-        if (error) setError(t.login.wrong)
+        if (error?.code === "email_not_confirmed") setError(t.login.notConfirmed)
+        else if (error) {
+          // Hésab yoqmu yaki shifir xatamu: ayrip körsitimiz (0007_email_exists.sql)
+          const { data: exists, error: checkError } = await supabase().rpc("email_exists", { addr })
+          setError(!checkError && exists === false ? t.login.noSuchAccount : t.login.wrongPassword)
+        }
       } else if (mode === "signup") {
         if (password.length < MIN_PASSWORD) return setError(t.login.weak)
         if (password !== password2) return setError(t.login.mismatch)
@@ -48,7 +75,7 @@ export function LoginScreen() {
           password,
           options: { emailRedirectTo: window.location.origin },
         })
-        if (error) setError(error.code === "weak_password" ? t.login.weak : t.login.signUpFailed)
+        if (error) setError(signUpError(error.code, error.message))
         // Élxet jezmlesh ochuq bolsa session kelmeydu ("élxetni tekshürüng" körsitilidu); bolmisa AuthGate özi kirgüzidu.
         else if (!data.session) setSent(t.login.checkEmail(addr))
       } else {
