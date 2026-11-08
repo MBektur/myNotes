@@ -9,6 +9,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { useAuth } from "@/components/auth/auth-gate"
 import { t } from "@/lib/i18n"
 import { demoNotes } from "@/lib/demo"
+import { currentUserId } from "@/lib/supabase/client"
 import {
   SORT_DEFAULT_DIR,
   emptyFilters,
@@ -128,8 +129,8 @@ function Inner({ children }: { children: React.ReactNode }) {
         : f
     )
   }, [workspaces])
-  const loadDemo = () => {
-    importMerge(demoNotes())
+  const loadDemo = async () => {
+    importMerge(demoNotes(await currentUserId()))
     toast.success(t.dashboard.demoLoaded)
   }
   const edit = (n: Note) => setTarget({ note: n })

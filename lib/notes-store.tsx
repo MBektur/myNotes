@@ -3,6 +3,7 @@
 import * as React from "react"
 import { toast } from "sonner"
 import { deleteBlobs } from "./blobs"
+import { demoNotes } from "./demo"
 import { t } from "./i18n"
 import { hasLegacyData, markMigrated, readLegacySchedule, uploadLegacyNotes } from "./migrate"
 import { deleteNotes, listNotes, rowToNote, upsertNotes } from "./notes-repo"
@@ -152,6 +153,23 @@ function offerMigration(dispatch: React.Dispatch<Action>) {
   })
 }
 
+/**
+ * Hésabqa birinchi qétim kirgende xatire bolmisa demo xatirilerni özlükidin qoshidu. "Qilindi" belgisi hésabta
+ * (user_metadata) saqlinidu: demo'lar öchürülse yaki bashqa qurulmidin kirilse qayta qoshulmaydu.
+ * Xatiresi bar kona hésablar peqet belgilinidu.
+ */
+async function seedDemoOnce(dispatch: React.Dispatch<Action>, empty: boolean) {
+  try {
+    const db = supabase()
+    const user = (await db.auth.getSession()).data.session?.user
+    if (!user || user.user_metadata?.demo_seeded) return
+    if (empty) dispatch({ type: "importMerge", notes: demoNotes(user.id).map(normalizeNote) })
+    await db.auth.updateUser({ data: { demo_seeded: true } })
+  } catch {
+    // Belgilesh meghlup bolsa kéyinki qétim qayta sinilidu; id'ler sabit, köpeymeydu.
+  }
+}
+
 const Ctx = React.createContext<Store | null>(null)
 
 export function NotesProvider({ children }: { children: React.ReactNode }) {
@@ -198,7 +216,10 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
         dispatch({ type: "hydrate", notes: remote })
       }
       if (uidRef.current) writeCache("notes", uidRef.current, remote)
-      if (initial && remote.length === 0 && hasLegacyData()) offerMigration(dispatch)
+      if (initial) {
+        if (remote.length === 0 && hasLegacyData()) offerMigration(dispatch)
+        else void seedDemoOnce(dispatch, remote.length === 0)
+      }
     } catch {
       if (!initial) return // arqa pilanda yéngilash xatasi: jim
       toast.error(t.sync.loadFailed)

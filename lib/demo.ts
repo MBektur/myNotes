@@ -14,11 +14,12 @@ const ago = (days: number, hour = 10) => {
 }
 
 let seq = 0
+let prefix = "demo"
 const mk = (o: Partial<Note> & { updated: number }): Note => {
   const { updated, ...rest } = o
   seq++
   return {
-    id: `demo-${seq}`,
+    id: `${prefix}-${seq}`,
     status: "todo",
     tags: [],
     links: [],
@@ -31,9 +32,13 @@ const mk = (o: Partial<Note> & { updated: number }): Note => {
 const items = (list: [string, boolean][], p: string) =>
   list.map(([text, done], i) => ({ id: `${p}-${i}`, text, done }))
 
-/** Uygurca demo xatiriler (id'ler sabit: qayta yüklense birleshtürüshte köpiymeydu). */
-export function demoNotes(): Note[] {
+/**
+ * Uygurca demo xatiriler. id'ler her paydilinighuchi üchün sabit: qayta yüklense birleshtürüshte köpiymeydu.
+ * notes.id pütün jadwelde birla (primary key), shunga id'de user id bolushi kerek.
+ */
+export function demoNotes(userId: string): Note[] {
   seq = 0
+  prefix = `demo-${userId}`
   return [
     mk({
       updated: 0, status: "in_progress", priority: "high", category: "تور بېكەت", color: "blue",
