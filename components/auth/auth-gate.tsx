@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { isAuthApiError } from "@supabase/supabase-js"
 import { clearUserCache, isSupabaseConfigured, supabase } from "@/lib/supabase/client"
 import { initSchedule } from "@/lib/schedule-store"
 import { initWorkspaces } from "@/lib/workspaces-store"
@@ -14,6 +15,15 @@ const AuthCtx = React.createContext<{ logout: () => void | Promise<void> }>({ lo
 export const useAuth = () => React.useContext(AuthCtx)
 
 type State = "checking" | "in" | "out" | "recovery"
+
+/** Hésab öchürülgen / oturum bikar qilinghan bolsa yerlik oturumni tazilaydu. Tor xatasida (offline) chiqarmaydu. */
+async function verifySession() {
+  const db = supabase()
+  const { error } = await db.auth.getUser()
+  if (error && isAuthApiError(error) && [401, 403, 404].includes(error.status)) {
+    await db.auth.signOut({ scope: "local" })
+  }
+}
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
   const [state, setState] = React.useState<State>(isSupabaseConfigured ? "checking" : "out")
@@ -41,11 +51,18 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   }, [])
 
   React.useEffect(() => {
-    if (state === "in") {
-      void initSchedule()
-      void initWorkspaces()
-      void refreshSubscription()
+    if (state !== "in") return
+    void initSchedule()
+    void initWorkspaces()
+    void refreshSubscription()
+    // Oturum brauzérda saqlinidu; hésab Supabase'te öchürülse token müdditi tügigüche ilova ochuq qalidu.
+    // Shunga achqanda we sehipige qaytqanda serwerdin tekshürimiz.
+    void verifySession()
+    const onVisible = () => {
+      if (document.visibilityState === "visible") void verifySession()
     }
+    document.addEventListener("visibilitychange", onVisible)
+    return () => document.removeEventListener("visibilitychange", onVisible)
   }, [state])
 
   const logout = React.useCallback(async () => {

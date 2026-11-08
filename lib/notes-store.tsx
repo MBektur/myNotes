@@ -163,10 +163,12 @@ async function seedDemoOnce(dispatch: React.Dispatch<Action>, empty: boolean) {
     const db = supabase()
     const user = (await db.auth.getSession()).data.session?.user
     if (!user || user.user_metadata?.demo_seeded) return
-    if (empty) dispatch({ type: "importMerge", notes: demoNotes(user.id).map(normalizeNote) })
-    await db.auth.updateUser({ data: { demo_seeded: true } })
+    // Aldi bilen serwerde belgileymiz: hésab öchürülgen / oturum bikar bolsa xata qaytidu we demo yézilmaydu.
+    const { error } = await db.auth.updateUser({ data: { demo_seeded: true } })
+    if (error || !empty) return
+    dispatch({ type: "importMerge", notes: demoNotes(user.id).map(normalizeNote) })
   } catch {
-    // Belgilesh meghlup bolsa kéyinki qétim qayta sinilidu; id'ler sabit, köpeymeydu.
+    // Tor xatasi: kéyinki achilishta qayta sinilidu.
   }
 }
 
