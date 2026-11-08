@@ -59,31 +59,15 @@ export function demoNotes(userId: string): Note[] {
       content: "يېڭى نەشرىنى تەكشۈرۈپ ئەپ دۇكىنىغا يوللاش.",
       checklist: items([["خاتالىق تۈزىتىش", true], ["ئىشلەتكۈچى سىنىقى", true], ["دۇكانغا يوللاش", false]], "c"),
     }),
-    mk({
-      updated: 3, status: "done", priority: "high", category: "تور بېكەت", color: "purple",
-      title: "تۈر تەكلىپنامىسىنى يېزىش", tags: ["ھۆججەت"],
-      content: "ئىشلەپچىقىرىش مۇددىتى ۋە بېجىرىش مەبلىغى كىرگۈزۈلدى.",
-    }),
+
     mk({
       updated: 4, status: "todo", priority: "urgent", category: "ئەپ", color: "orange",
       title: "رىقابەتچىلەرنى تەتقىق قىلىش", deadline: day(-1), tags: ["تەتقىقات"],
       content: "ئوخشاش ئەپلەرنىڭ ئالاھىدىلىكى ۋە باھاسىنى سېلىشتۇرۇش.",
     }),
     mk({
-      updated: 0, status: "todo", priority: "low", category: "ئۆگىنىش", color: "teal",
-      title: "ئۇيغۇرچە Next.js دەرسلىكى", deadline: day(7), tags: ["ئۆگىنىش", "كود"],
-      content: "ھەر كۈنى 30 مىنۇت ئۆگىنىش.",
-      checklist: items([["React ئاساسلىرى", true], ["Tailwind", true], ["Next.js 16 ھۆججىتى", false], ["كىچىك تۈر ياساش", false], ["ئېلان قىلىش", false]], "d"),
-      links: [{ id: "l2", url: "https://nextjs.org/docs", label: "Next.js Docs" }],
-    }),
-    mk({
       updated: 5, status: "done", priority: "low", category: "ئۆگىنىش", color: "teal",
       title: "ئىنگلىزچە 20 سۆز يادلاش", tags: ["ئۆگىنىش"],
-    }),
-    mk({
-      updated: 1, status: "todo", priority: "medium", category: "شەخسىي", color: "pink",
-      title: "ئاتا-ئانامغا تېلېفون قىلىش", deadline: day(0), tags: ["ئائىلە"],
-      content: "ھەپتە ئاخىرىدا ئائىلىۋى سۆھبەت ۋاقتىنى كېلىشىش.",
     }),
     mk({
       updated: 2, status: "in_progress", priority: "high", category: "شەخسىي", color: "orange",
