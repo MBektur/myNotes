@@ -153,6 +153,7 @@ export const en: Messages = {
     sendLink: "Send reset link",
     linkSent: (email: string) => `If ${email} has an account, a password reset link is on its way.`,
     sendFailed: "Could not send the email. Please try again later",
+    noSuchAccount: "No account found with this email",
     backToLogin: "Back to sign in",
     newPasswordTitle: "Set a new password",
     newPasswordSubtitle: "Choose a new password for your account",

@@ -52,6 +52,9 @@ export function LoginScreen() {
         // Élxet jezmlesh ochuq bolsa session kelmeydu ("élxetni tekshürüng" körsitilidu); bolmisa AuthGate özi kirgüzidu.
         else if (!data.session) setSent(t.login.checkEmail(addr))
       } else {
+        // Hésab bolmisa élxet yollimaymiz. Fonksiye téxi qurulmighan (0007) yaki xata bolsa tosmaymiz, yollaymiz.
+        const { data: exists, error: checkError } = await supabase().rpc("email_exists", { addr })
+        if (!checkError && exists === false) return setError(t.login.noSuchAccount)
         const { error } = await auth.resetPasswordForEmail(addr, { redirectTo: window.location.origin })
         if (error) setError(t.login.sendFailed)
         else setSent(t.login.linkSent(addr))

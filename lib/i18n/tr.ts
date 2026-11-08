@@ -153,6 +153,7 @@ export const tr: Messages = {
     sendLink: "Sıfırlama bağlantısı gönder",
     linkSent: (email: string) => `${email} adresine ait bir hesap varsa, şifre sıfırlama bağlantısı yolda.`,
     sendFailed: "E-posta gönderilemedi. Lütfen daha sonra tekrar deneyin",
+    noSuchAccount: "Bu e-posta ile kayıtlı bir hesap bulunamadı",
     backToLogin: "Girişe dön",
     newPasswordTitle: "Yeni şifre belirleyin",
     newPasswordSubtitle: "Hesabınız için yeni bir şifre seçin",
