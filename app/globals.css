@@ -125,6 +125,9 @@
     @apply bg-background text-foreground;
   }
   html {
+    /* Dikey scrollbar bar-yoq bolghanda (Safari scrollbar-gutter ni qollimaydu) sehipe sol-ong silkinip ketmesliki üchün
+       scrollbar hemishe körünidu; shuning bilen sehipe ölchimi sahifa mezmuni ozun-qisqa bolushidin qet'iy nezer özgermeydu */
+    overflow-y: scroll;
     scrollbar-gutter: stable;
     /* Qosh bosush bilen zoom bolushining aldini alidu */
     touch-action: manipulation;
@@ -230,6 +233,13 @@
 }
 
 /* Sehipe almishish: aldi bilen kona sehipe solishidu, andin yéngisi körünidu (ikkisi üst-üstige chüshmeydu) */
+/* Pütün betning (root) avtomatik çapraz almishishini öchüremiz: u sol menyu/ sarlavhe/ pütün sehipeni birlikte "sekritidu".
+   Bu qatlam yoq bolghanda sidebar we sarlavha anniq turidu, peqet mezmun (page-fade) yumshaq almishidu. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  display: none;
+}
 ::view-transition-group(.page-fade) {
   animation: none; /* kona/yéngi sehipe égizliki ayrim bolsa, qatlamlar "sozulup" kétishining aldini alidu */
 }

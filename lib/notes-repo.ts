@@ -63,7 +63,10 @@ export async function listNotes(): Promise<Note[]> {
     const { data, error } = await supabase()
       .from("notes")
       .select("*")
-      .order("created_at", { ascending: false })
+      // notes_user_updated_idx (user_id, updated_at desc) bilen tizilidu: sortlash qedemi bolmaydu.
+      // id tallighuchi: teng updated_at'lar sahifilar arisida qayta-qaytidin chiqmasliqi üchün.
+      .order("updated_at", { ascending: false })
+      .order("id", { ascending: true })
       .range(from, from + PAGE - 1)
     if (error) throw error
     out.push(...data.map(rowToNote))
