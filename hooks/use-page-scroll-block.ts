@@ -18,10 +18,8 @@ function canScrollWithin(start: EventTarget | null, dx: number, dy: number) {
 }
 
 /**
- * Modal échilghanda arqidiki sehipening scroll qilishini tosaydu, lékin html ning scrollbar'ini ornida qaldurudu.
- * (Base UI ning ichki scroll-lock'i html ni `overflow:hidden` qilidu; `scrollbar-gutter: stable` bolghachqa scrollbar
- * ornida boshluq qalidu — Safari da, RTL dimu scrollbar ong terepte bolghachqa, sidebar yénida boshluq bolup körünidu.)
- * Dialog.Root ni `modal="trap-focus"` bilen ishlitish kérek (u scroll-lock qoymaydu).
+ * Arqidiki sehipening scroll qilishini tosaydu (wheel / touch / scrollbar / klaviatura), lékin scrollbar ornida turidu.
+ * Qollinilishi: components/page-scroll-guard.tsx (Base UI ning scroll-lock'i bilen birge).
  */
 export function usePageScrollBlock(open: boolean) {
   React.useEffect(() => {

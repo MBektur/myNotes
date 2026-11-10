@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { AuthGate } from "@/components/auth/auth-gate"
 import { I18nProvider } from "@/components/i18n-provider"
+import { PageScrollGuard } from "@/components/page-scroll-guard"
 import "./globals.css"
 
 const vazirmatn = Vazirmatn({ variable: "--font-vazirmatn", subsets: ["arabic", "latin"] })
@@ -40,6 +41,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               <AuthGate>{children}</AuthGate>
             </TooltipProvider>
             <Toaster />
+            <PageScrollGuard />
           </I18nProvider>
         </ThemeProvider>
       </body>

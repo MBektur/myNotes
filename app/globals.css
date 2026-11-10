@@ -127,7 +127,9 @@
   html {
     /* Dikey scrollbar bar-yoq bolghanda (Safari scrollbar-gutter ni qollimaydu) sehipe sol-ong silkinip ketmesliki üchün
        scrollbar hemishe körünidu; shuning bilen sehipe ölchimi sahifa mezmuni ozun-qisqa bolushidin qet'iy nezer özgermeydu */
-    overflow-y: scroll;
+    /* !important: Base UI (Dialog / Select / Menu) échilghanda html ge inline `overflow-y:hidden` yazidu; bu scrollbar'ni
+       yoqitip ornida boshluq qaldurmasliqi üchün küchsizlendürülidu. Sehipening scroll qilishini components/page-scroll-guard.tsx tosaydu */
+    overflow-y: scroll !important;
     scrollbar-gutter: stable;
     /* Qosh bosush bilen zoom bolushining aldini alidu */
     touch-action: manipulation;
