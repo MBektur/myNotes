@@ -5,6 +5,7 @@ import { Dialog } from "@base-ui/react/dialog"
 import { X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useLocale } from "@/components/i18n-provider"
+import { usePageScrollBlock } from "@/hooks/use-page-scroll-block"
 import { t } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 
@@ -58,6 +59,7 @@ export function SidePanel({
   children: React.ReactNode
 }) {
   const { dir } = useLocale()
+  usePageScrollBlock(open)
   const rtl = dir === "rtl"
   const side = rtl ? -1 : 1 // panel échilghan terep: RTL = sol (-1), LTR = ong (+1)
   const [width, setWidth] = React.useState(readWidth)
@@ -121,7 +123,8 @@ export function SidePanel({
   }
 
   return (
-    <Dialog.Root open={open} onOpenChange={onOpenChange}>
+    // modal="trap-focus": Base UI ning scroll-lock'i yoq (u scrollbar ornida boshluq qaldurudu), scroll'ni usePageScrollBlock tosaydu
+    <Dialog.Root open={open} onOpenChange={onOpenChange} modal="trap-focus">
       <Dialog.Portal>
         <Dialog.Backdrop className="fixed inset-0 z-50 bg-black/20 transition-opacity duration-250 ease-[cubic-bezier(0.33,1,0.68,1)] data-ending-style:opacity-0 data-starting-style:opacity-0 supports-backdrop-filter:backdrop-blur-[3px]" />
         <Dialog.Popup
